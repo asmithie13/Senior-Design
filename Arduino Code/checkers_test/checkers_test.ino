@@ -1,6 +1,12 @@
 //Program to implement checkers logic (used within manual operation):
 #include <Keypad.h>
 
+//---
+//TO-DO:
+//Enable kings to skip-over and collect other checkers
+//Allow for double-jumps if a player skips over a checker and another skip is available
+//---
+
 //Struct to declare players:
 struct Player{
   int playerNum;
@@ -68,6 +74,7 @@ void setup(){
   testBoardConfig();
 }
 
+//Execute the program:
 void loop(){
   //Select the checker to be moved:
   selectChecker();
@@ -93,6 +100,8 @@ void testBoardConfig(){
       Serial.print(checkerBoard[i][j]);
     }
   }
+
+  //TEST:
   Serial.print("\nPlayer #1 Score: ");
   Serial.print(playerOneScore);
   Serial.print("\nPlayer #2 Score: ");
@@ -102,11 +111,13 @@ void testBoardConfig(){
 //Function that scans the board to check if any king pieces must be awarded:
 void checkForKing(){
   for(int i=0; i<8; i++){
+    //If one of Player #2's checkers is in the first row, it should be awarded king status:
     if(checkerBoard[0][i]==2){
-      checkerBoard[0][i]++;
+      checkerBoard[0][i]+=2;
     }
+    //If one of Player #1's checkers is in the last row, it should be awarded king status:
     else if(checkerBoard[7][i]==1){
-      checkerBoard[7][i]++;
+      checkerBoard[7][i]+=2;
     }
   }
 }
@@ -128,7 +139,7 @@ void selectChecker(){
   int validFlag=1;
 
   //If the input coordinate was invalid, ask again:
-  while(validFlag==1 || (coordOne+coordTwo)%2==1 || checkerBoard[coordOne][coordTwo]!=playerInTurn.playerNum){
+  while(validFlag>0 || (coordOne+coordTwo)%2==1){ //"(coordOne+coordTwo)%2==1" signals that the input coordinate is on an un-used square in the game
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
     coordOne=pollForSelection()-'0';
@@ -138,7 +149,13 @@ void selectChecker(){
     if(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7){
       continue;
     }
+
+    //Incorrect player selects piece:
+    if((playerInTurn.playerNum==1 && checkerBoard[coordOne][coordTwo]!=1 && checkerBoard[coordOne][coordTwo]!=3) || (playerInTurn.playerNum==2 && checkerBoard[coordOne][coordTwo]!=2 && checkerBoard[coordOne][coordTwo]!=4)){
+      continue;
+    }
     
+    //Depending on the type of checker piece, validation is executed differently:
     if(checkerBoard[coordOne][coordTwo]==1){
       validFlag=checkIfMovePlayerOne(coordOne, coordTwo);
     }
@@ -146,7 +163,11 @@ void selectChecker(){
       validFlag=checkIfMovePlayerTwo(coordOne, coordTwo);
     }
     else{
-      validFlag=checkIfMoveKing(coordOne, coordTwo);
+      validFlag=checkIfMovePlayerOne(coordOne, coordTwo);
+      validFlag+=checkIfMovePlayerTwo(coordOne, coordTwo);
+      if(validFlag==1){
+        validFlag=0;
+      }
     }
   }
   
@@ -177,22 +198,22 @@ int checkIfMovePlayerOne(int coordOne, int coordTwo){
   
   //Only enter this statement if the checker has possible moves to either side, and is not on the board's edge:
   if(coordOnePlus>=0 && coordOnePlus<8 && coordTwoMin>=0 && coordTwoMin<8 && coordTwoPlus>=0 && coordTwoPlus<8){
-    Serial.print("A");
     //Now, see if there is a move available to skip over the opposing player's checker:
     int tempFlag=0;
 
-    //Check to see if the move to the left would be valid:
-    if(coordOnePlusTwo>7 || coordTwoMinTwo<0 || checkerBoard[coordOnePlus][coordTwoMin]!=2 || checkerBoard[coordOnePlusTwo][coordTwoMinTwo]!=0){
+    //Move #1: Skipping over the opposing player's checker with a piece not on an edge:
+    //In order, the conditions are as follows:
+    if(coordOnePlusTwo>7 || coordTwoMinTwo<0 || (checkerBoard[coordOnePlusTwo][coordTwoMinTwo]==0 && checkerBoard[coordOnePlus][coordTwoMin]!=2 && checkerBoard[coordOnePlus][coordTwoMin]!=4)  || checkerBoard[coordOnePlusTwo][coordTwoMinTwo]!=0){
       tempFlag++;
     }
 
     //Check to see if the move to the right would be valid:
-    if(coordOnePlusTwo>7 || coordTwoPlusTwo>7 || checkerBoard[coordOnePlus][coordTwoPlus]!=2 || checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]!=0){
+    if(coordOnePlusTwo>7 || coordTwoPlusTwo>7 || (checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]==0 && checkerBoard[coordOnePlus][coordTwoPlus]!=2 && checkerBoard[coordOnePlus][coordTwoPlus]!=4) || checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]!=0){
       tempFlag++;
     }
 
     //Check to see if a move forward without skipping over the opponent's checker is available:
-    if(checkerBoard[coordOne+1][coordTwo-1]!=0 && checkerBoard[coordOne+1][coordTwo+1]!=0){
+    if(checkerBoard[coordOnePlus][coordTwoMin]!=0 && checkerBoard[coordOnePlus][coordTwoPlus]!=0){
       tempFlag++;
     }
 
@@ -203,14 +224,12 @@ int checkIfMovePlayerOne(int coordOne, int coordTwo){
   }
 
   //The piece is on the left outer-edge, and the diagonal-right move is not available:
-  if((coordTwoMin<0 && checkerBoard[coordOnePlus][coordTwoPlus]!=0) && (coordTwoMin<0 && (checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]!=0 || checkerBoard[coordOnePlus][coordTwoPlus]!=2))){
-    Serial.print("B");
+  if(coordTwoMin<0 && checkerBoard[coordOnePlus][coordTwoPlus]!=0 && ((checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]==0 && checkerBoard[coordOnePlus][coordTwoPlus]!=2 && checkerBoard[coordOnePlus][coordTwoPlus]!=4) || checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]!=0)){
     return 1;
   }
 
   //The piece is on the right outer-edge, and the diagonal-left move is not available:
-  if((coordTwoPlus>7 && checkerBoard[coordOnePlus][coordTwoMin]!=0) && (coordTwoPlus>7 && (checkerBoard[coordOnePlusTwo][coordTwoMinTwo]!=0 || checkerBoard[coordOnePlus][coordTwoMin]!=2))){
-    Serial.print("C");
+  if((coordTwoPlus>7 && checkerBoard[coordOnePlus][coordTwoMin]!=0) && ((checkerBoard[coordOnePlusTwo][coordTwoMinTwo]==0 && checkerBoard[coordOnePlus][coordTwoMin]!=2 && checkerBoard[coordOnePlus][coordTwoMin]!=4) || checkerBoard[coordOnePlusTwo][coordTwoMinTwo]!=0)){
     return 1;
   }
 
@@ -238,12 +257,12 @@ int checkIfMovePlayerTwo(int coordOne, int coordTwo){
     int tempFlag=0;
 
     //Check to see if the move to the left would be valid:
-    if(coordOneMinTwo<0 || coordTwoMinTwo<0 || checkerBoard[coordOneMin][coordTwoMin]!=1 || checkerBoard[coordOneMinTwo][coordTwoMinTwo]!=0){
+    if(coordOneMinTwo>7 || coordTwoMinTwo<0 || (checkerBoard[coordOneMinTwo][coordTwoMinTwo]==0 && checkerBoard[coordOneMin][coordTwoMin]!=1 && checkerBoard[coordOneMin][coordTwoMin]!=3)  || checkerBoard[coordOneMinTwo][coordTwoMinTwo]!=0){
       tempFlag++;
     }
 
     //Check to see if the move to the right would be valid:
-    if(coordOneMinTwo<0 || coordTwoPlusTwo>7 || checkerBoard[coordOneMin][coordTwoPlus]!=1 || checkerBoard[coordOneMinTwo][coordTwoPlusTwo]!=0){
+    if(coordOneMinTwo>7 || coordTwoPlusTwo>7 || (checkerBoard[coordOneMinTwo][coordTwoPlusTwo]==0 && checkerBoard[coordOneMin][coordTwoPlus]!=1 && checkerBoard[coordOneMin][coordTwoPlus]!=3) || checkerBoard[coordOneMinTwo][coordTwoPlusTwo]!=0){
       tempFlag++;
     }
 
@@ -259,12 +278,12 @@ int checkIfMovePlayerTwo(int coordOne, int coordTwo){
   }
 
   //The piece is on the left outer-edge, and the diagonal-right move is not available:
-  if((coordTwoMin<0 && checkerBoard[coordOneMin][coordTwoPlus]!=0) && (coordTwoMin<0 && (checkerBoard[coordOneMinTwo][coordTwoPlusTwo]!=0 || checkerBoard[coordOneMin][coordTwoPlus]!=1))){
+  if(coordTwoMin<0 && checkerBoard[coordOneMin][coordTwoPlus]!=0 && ((checkerBoard[coordOneMinTwo][coordTwoPlusTwo]==0 && checkerBoard[coordOneMin][coordTwoPlus]!=1 && checkerBoard[coordOneMin][coordTwoPlus]!=3) || checkerBoard[coordOneMinTwo][coordTwoPlusTwo]!=0)){
     return 1;
   }
 
   //The piece is on the right outer-edge, and the diagonal-left move is not available:
-  if(((coordTwoPlus>7 && checkerBoard[coordOneMin][coordTwoMin]!=0)) && (coordTwoPlus>7 && (checkerBoard[coordOneMinTwo][coordTwoMinTwo]!=0 || checkerBoard[coordOneMin][coordTwoMin]!=1))){
+  if((coordTwoPlus>7 && checkerBoard[coordOneMin][coordTwoMin]!=0) && ((checkerBoard[coordOneMinTwo][coordTwoMinTwo]==0 && checkerBoard[coordOneMin][coordTwoMin]!=1 && checkerBoard[coordOneMin][coordTwoMin]!=3) || checkerBoard[coordOneMinTwo][coordTwoMinTwo]!=0)){
     return 1;
   }
 
@@ -282,32 +301,40 @@ int checkIfMoveKing(int coordOne, int coordTwo){
   coordTwoPlus=coordTwo+1;
 
   if(coordOneMin>=0 && coordOneMin<8 && coordOnePlus>=0 && coordOnePlus<8 && coordTwoMin>=0 && coordTwoMin<8 && coordTwoPlus>=0 && coordTwoPlus<8){
+    Serial.print("1");
     if(checkerBoard[coordOne-1][coordTwo-1]!=0 && checkerBoard[coordOne-1][coordTwo+1]!=0 && checkerBoard[coordOne+1][coordTwo-1]!=0 && checkerBoard[coordOne+1][coordTwo+1]!=0){
+      Serial.print("2");
       return 1;
     }
   }
 
   if(coordOneMin<0 && coordTwoMin<0 && checkerBoard[coordOne+1][coordTwo+1]!=0){
+    Serial.print("3");
     return 1;
   }
 
   if(coordOnePlus>7 && coordTwoPlus>7 && checkerBoard[coordOne-1][coordTwo-1]!=0){
+    Serial.print("4");
     return 1;
   }
 
   if(coordOneMin<0 && checkerBoard[coordOne+1][coordTwo+1]!=0 && checkerBoard[coordOne+1][coordTwo-1]!=0){
+    Serial.print("5");
     return 1;
   }
 
   if(coordOnePlus>7 && checkerBoard[coordOne-1][coordTwo+1]!=0 && checkerBoard[coordOne-1][coordTwo-1]!=0){
+    Serial.print("6");
     return 1;
   }
 
   if(coordTwoMin<0 && checkerBoard[coordOne-1][coordTwo+1]!=0 && checkerBoard[coordOne+1][coordTwo+1]!=0){
+    Serial.print("7");
     return 1;
   }
 
   if(coordTwoPlus>7 && checkerBoard[coordOne-1][coordTwo-1]!=0 && checkerBoard[coordOne+1][coordTwo-1]!=0){
+    Serial.print("8");
     return 1;
   }
 
@@ -317,11 +344,89 @@ int checkIfMoveKing(int coordOne, int coordTwo){
 //Function to increment the player's score:
 void incrementScore(){
   if(playerInTurn.playerNum==1){
-    playerOneScore+=2;
+    playerOneScore+=1;
   }
   else{
-    playerTwoScore+=2;
+    playerTwoScore+=1;
   }
+}
+
+//Move conditions for Player #1:
+int moveConditionsPlayerOne(int* neededPlayer, int coordOne, int coordTwo){
+  //Flag to be returned to indicate if the move is valid:
+  int retFlag=0;
+
+  //Flag to indicate that the score should be incremented:
+  int scoreFlag=0;
+
+  //If the move involves the checker moving forward to either side, and the space is empty, allow the move:
+  if(coordOne==selectedChecker[0]+1 && (coordTwo==selectedChecker[1]-1 || coordTwo==selectedChecker[1]+1) && checkerBoard[coordOne][coordTwo]==0){
+    retFlag=1;
+  }
+  //If the move involves skipping the opponent's checker, and the space is empty, allow the move:
+  if(coordOne==selectedChecker[0]+2 && (coordTwo==selectedChecker[1]-2 || coordTwo==selectedChecker[1]+2) && checkerBoard[coordOne][coordTwo]==0){
+    //For a successful skip to occur, the checker being skipped must belong to the opposing player:
+    if(coordTwo==selectedChecker[1]-2 && (checkerBoard[coordOne-1][coordTwo+1]==neededPlayer[0] || checkerBoard[coordOne-1][coordTwo+1]==neededPlayer[1])){
+      //If valid, remove that chip from the board, and increment the current player's score:
+      checkerBoard[coordOne-1][coordTwo+1]=0;
+      //Increment the score, since a checker was removed:
+      scoreFlag=1;
+      retFlag=1;
+    }
+    else if(coordTwo==selectedChecker[1]+2 && (checkerBoard[coordOne-1][coordTwo-1]==neededPlayer[0] || checkerBoard[coordOne-1][coordTwo-1]==neededPlayer[1])){
+      checkerBoard[coordOne-1][coordTwo-1]=0;
+      //Increment the score, since a checker was removed:
+      scoreFlag=1;
+      retFlag=1;
+    }
+  }
+  
+  if(scoreFlag==1){
+    Serial.print("A");
+    incrementScore();
+  }
+
+  //Return the return flag:
+  return retFlag;
+}
+
+//Move conditions for Player #2:
+int moveConditionsPlayerTwo(int* neededPlayer, int coordOne, int coordTwo){
+  //Flag to be returned to indicate if the move is valid:
+  int retFlag=0;
+
+  //Flag to indicate that the score should be incremented:
+  int scoreFlag=0;
+
+  //If the move involves the checker moving forward to either side, and the space is empty, allow the move:
+  if(coordOne==selectedChecker[0]-1 && (coordTwo==selectedChecker[1]-1 || coordTwo==selectedChecker[1]+1) && checkerBoard[coordOne][coordTwo]==0){
+    retFlag=1;
+  }
+  //If the move involves skipping the opponent's checker, and the space is empty, allow the move:
+  if(coordOne==selectedChecker[0]-2 && (coordTwo==selectedChecker[1]-2 || coordTwo==selectedChecker[1]+2) && checkerBoard[coordOne][coordTwo]==0){
+    //For a successful skip to occur, the checker being skipped must belong to the opposing player:
+    if(coordTwo==selectedChecker[1]-2 && (checkerBoard[coordOne+1][coordTwo+1]==neededPlayer[0] || checkerBoard[coordOne+1][coordTwo+1]==neededPlayer[1])){
+      //If valid, remove that chip from the board, and increment the current player's score:
+      checkerBoard[coordOne+1][coordTwo+1]=0;
+      //Increment the score, since a checker was removed:
+      scoreFlag=1;
+      retFlag=1;
+    }
+    else if(coordTwo==selectedChecker[1]+2 && (checkerBoard[coordOne+1][coordTwo-1]==neededPlayer[0] || checkerBoard[coordOne+1][coordTwo-1]==neededPlayer[1])){
+      checkerBoard[coordOne+1][coordTwo-1]=0;
+      //Increment the score, since a checker was removed:
+      scoreFlag=1;
+      retFlag=1;
+    }
+  }
+  
+  if(scoreFlag==1){
+    Serial.print("B");
+    incrementScore();
+  }
+  
+  //Return the return flag:
+  return retFlag;
 }
 
 //Select the space to move the checker to:
@@ -330,7 +435,7 @@ void moveChecker(){
   int coordOne, coordTwo;
 
   //Flag to determine if the move is valid:
-  bool validFlag=false;
+  int validFlag=0;
 
   //Player needed for the skip to occur (this includes king-assigned pieces):
   int neededPlayer[2];
@@ -344,7 +449,7 @@ void moveChecker(){
   }
 
   //If the input coordinate was invalid, ask again:
-  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==1 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==false){
+  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==1 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
     coordOne=pollForSelection()-'0';
@@ -355,65 +460,36 @@ void moveChecker(){
 
       //Establish move conditions for Player #1's checkers:
       if(checkerBoard[selectedChecker[0]][selectedChecker[1]]==1){
-        //If the move involves the checker moving forward to either side, and the space is empty, allow the move:
-        if(coordOne==selectedChecker[0]+1 && (coordTwo==selectedChecker[1]-1 || coordTwo==selectedChecker[1]+1) && checkerBoard[coordOne][coordTwo]==0){
+        if(moveConditionsPlayerOne(neededPlayer, coordOne, coordTwo)==1){
           break;
-        }
-        //If the move involves skipping the opponent's checker, and the space is empty, allow the move:
-        if(coordOne==selectedChecker[0]+2 && (coordTwo==selectedChecker[1]-2 || coordTwo==selectedChecker[1]+2) && checkerBoard[coordOne][coordTwo]==0){
-          //For a successful skip to occur, the checker being skipped must belong to the opposing player:
-          if(coordTwo==selectedChecker[1]-2 && (checkerBoard[coordOne-1][coordTwo+1]==neededPlayer[0] || checkerBoard[coordOne-1][coordTwo+1]==neededPlayer[1])){
-            //If valid, remove that chip from the board, and increment the current player's score:
-            checkerBoard[coordOne-1][coordTwo+1]=0;
-            //Increment the score, since a checker was removed:
-            incrementScore();
-            break;
-          }
-          else if(coordTwo==selectedChecker[1]+2 && (checkerBoard[coordOne-1][coordTwo-1]==neededPlayer[0] || checkerBoard[coordOne-1][coordTwo-1]==neededPlayer[1])){
-            checkerBoard[coordOne-1][coordTwo-1]=0;
-            //Increment the score, since a checker was removed:
-            incrementScore();
-            break;
-          }
-        }
+        };
       }
-
       //Establish move conditions for Player #2's checkers:
       else if(checkerBoard[selectedChecker[0]][selectedChecker[1]]==2){
-        //If the move involves the checker moving forward to either side, and the space is empty, allow the move:
-        if(coordOne==selectedChecker[0]-1 && (coordTwo==selectedChecker[1]-1 || coordTwo==selectedChecker[1]+1) && checkerBoard[coordOne][coordTwo]==0){
+        if(moveConditionsPlayerTwo(neededPlayer, coordOne, coordTwo)==1){
           break;
-        }
-        //If the move involves skipping the opponent's checker, and the space is empty, allow the move:
-        if(coordOne==selectedChecker[0]-2 && (coordTwo==selectedChecker[1]-2 || coordTwo==selectedChecker[1]+2) && checkerBoard[coordOne][coordTwo]==0){
-          //For a successful skip to occur, the checker being skipped must belong to the opposing player:
-          if(coordTwo==selectedChecker[1]-2 && (checkerBoard[coordOne+1][coordTwo+1]==neededPlayer[0] || checkerBoard[coordOne+1][coordTwo+1]==neededPlayer[1])){
-            //If valid, remove that chip from the board, and increment the current player's score:
-            checkerBoard[coordOne+1][coordTwo+1]=0;
-            //Increment the score, since a checker was removed:
-            incrementScore();
-            break;
-          }
-          else if(coordTwo==selectedChecker[1]+2 && (checkerBoard[coordOne+1][coordTwo-1]==neededPlayer[0] || checkerBoard[coordOne+1][coordTwo-1]==neededPlayer[1])){
-            checkerBoard[coordOne+1][coordTwo-1]=0;
-            //Increment the score, since a checker was removed:
-            incrementScore();
-            break;
-          }
-        }
+        };
       }
 
       //Establish move conditions for either players' king checkers:
+      else{
+        if(coordOne>selectedChecker[0]){
+          if(moveConditionsPlayerOne(neededPlayer, coordOne, coordTwo)==1){
+            break;
+          };
+        }
+        else{
+          if(moveConditionsPlayerTwo(neededPlayer, coordOne, coordTwo)==1){
+            break;
+          };
+        }
+      }
+
     }
   }
   
   //Set the new checker space:
-  if(playerInTurn.playerNum==1){
-    checkerBoard[coordOne][coordTwo]=1;
-  }
-  else{
-    checkerBoard[coordOne][coordTwo]=2;
-  }
+  checkerBoard[coordOne][coordTwo]=checkerBoard[selectedChecker[0]][selectedChecker[1]];
 
   //Set the spot where the selected checker was to an empty space:
   checkerBoard[selectedChecker[0]][selectedChecker[1]]=0;
