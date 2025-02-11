@@ -107,10 +107,14 @@ class gameBoard():
 
     def regularMove(self, move):
         self.tiles[move.end[0]][move.end[1]] = self.tiles[move.start[0]][move.start[1]]
+        self.tiles[move.end[0]][move.end[1]].location = [move.end[0], move.end[1]]
+        self.checkKing(move)
         self.tiles[move.start[0]][move.start[1]] = None
     
     def overtakeMove(self, move, midPoint):
         self.tiles[move.end[0]][move.end[1]] = self.tiles[move.start[0]][move.start[1]]
+        self.tiles[move.end[0]][move.end[1]].location = [move.end[0], move.end[1]]
+        self.checkKing(move)
         self.tiles[move.start[0]][move.start[1]] = None
         self.tiles[midPoint[0]][midPoint[1]] = None
 
@@ -124,3 +128,9 @@ class gameBoard():
             self.currentPlayer = player.RED
         elif self.currentPlayer == player.RED:
             self.currentPlayer = player.BLACK
+    
+    def checkKing(self, move):
+        if self.tiles[move.end[0]][move.end[1]].location[0] == 7 and self.tiles[move.end[0]][move.end[1]].player == player.BLACK:
+            self.tiles[move.end[0]][move.end[1]].isKing = True
+        elif self.tiles[move.end[0]][move.end[1]].location[0] == 0 and self.tiles[move.end[0]][move.end[1]].player == player.RED:
+            self.tiles[move.end[0]][move.end[1]].isKing = True
