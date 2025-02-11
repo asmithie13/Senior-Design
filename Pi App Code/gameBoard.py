@@ -80,7 +80,7 @@ class gameBoard():
             return False, "Invalid move: Pieces must move diagonally."
         
         # Check if distance moved is 1 or 2
-        if xDistance != 1 or xDistance != 2:
+        if xDistance != 1 and xDistance != 2:
             return False, "Invalid move: Distance moved not 1 or 2 across."
         
         # Move Cases...
@@ -101,7 +101,7 @@ class gameBoard():
                 return False, "Invalid move: Cannot overtake one's own piece"
             else:
                 self.overtakeMove(move, midPoint)
-                self.switchPlayers
+                self.switchPlayers()
                 return True, "Piece is overtaken"
 
 
