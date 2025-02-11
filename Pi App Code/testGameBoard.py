@@ -32,10 +32,28 @@ class testGameBoard(unittest.TestCase):
         move3 = move([3, 6], [2, 7])    # moves black up
         move4 = move([4, 1], [5, 0])    # moves red down
 
-        self.gb.validateMove(move1)
+        self.gb.validateMove(move1) # Move pieces to move back
         self.gb.validateMove(move2)
 
-        self.assertEqual(self.gb.validateMove(move3), (False, moveError.BLACK_WRONG_DIRECTION))
+        result1 = self.gb.validateMove(move3) # invalid BLACK move
+        self.gb.validateMove(move([3, 6], [4, 7])) # valid move to change the turn
+        result2 = self.gb.validateMove(move4)
+
+        self.assertEqual(result1, (False, moveError.BLACK_WRONG_DIRECTION))
+        self.assertEqual(result2, (False, moveError.RED_WRONG_DIRECTION))
+
+    def testDiagonalMove(self):
+        move1 = move([2, 7], [3, 7])
+        self.assertEqual(self.gb.validateMove(move1), (False, moveError.NOT_DIAGONAL))
+
+    def testInvalidDistance(self):
+        move1 = move([0, 1], [3, 4])
+        self.assertEqual(self.gb.validateMove(move1), (False, moveError.INVALID_DISTANCE))
+
+    def testRegularMove(self):
+        move1 = move([2, 7], [3, 6])
+        result1 = self.gb.validateMove(move1)
+        # FINSH
 
 if __name__ == '__main__':
     unittest.main()
