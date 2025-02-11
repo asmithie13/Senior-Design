@@ -7,5 +7,10 @@ class gamePiece():
         self.isKing = False
 
 class player(Enum):
-    WHITE = 1
+    BLACK = 1
     RED = 2
+
+class move():
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
