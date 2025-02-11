@@ -4,6 +4,10 @@ class gameBoard():
         # black pieces always move first
         self.currentPlayer = player.BLACK
 
+        # pieces totals
+        self.redPieces = 12
+        self.blackPieces = 12
+
         # initialize all orginal pieces
         gamePieces = [
             gamePiece(player.BLACK, [0, 1]),
@@ -75,5 +79,48 @@ class gameBoard():
         if xDistance != yDistance:
             return False, "Invalid move: Pieces must move diagonally."
         
+        # Check if distance moved is 1 or 2
+        if xDistance != 1 or xDistance != 2:
+            return False, "Invalid move: Distance moved not 1 or 2 across."
+        
         # Move Cases...
-        # TODO
+        # Regular Move
+        if xDistance == 1:
+            self.regularMove(move)
+            self.switchPlayers()
+            return True, "Normal move is made"
+        else:
+            # TODO double jump case
+
+            # One jump case
+            midPoint = [(move.start[0] + move.end[0]) / 2, (move.start[1] + move.end[1]) / 2]
+            
+            if self.tiles[midPoint[0]][midPoint[1]] is None:
+                return False, "Invalid move: No piece is being taken with this 2 distance move"
+            elif self.tiles[midPoint[0]][midPoint[1]].player == self.currentPlayer:
+                return False, "Invalid move: Cannot overtake one's own piece"
+            else:
+                self.overtakeMove(move, midPoint)
+                self.switchPlayers
+                return True, "Piece is overtaken"
+
+
+    def regularMove(self, move):
+        self.tiles[move.end[0]][move.end[1]] = self.tiles[move.start[0]][move.start[1]]
+        self.tiles[move.start[0]][move.start[1]] = None
+    
+    def overtakeMove(self, move, midPoint):
+        self.tiles[move.end[0]][move.end[1]] = self.tiles[move.start[0]][move.start[1]]
+        self.tiles[move.start[0]][move.start[1]] = None
+        self.tiles[midPoint[0]][midPoint[1]] = None
+
+        if self.currentPlayer == player.BLACK:
+            self.redPieces -= 1
+        else:
+            self.blackPieces -= 1
+    
+    def switchPlayers(self):
+        if self.currentPlayer == player.BLACK:
+            self.currentPlayer = player.RED
+        elif self.currentPlayer == player.RED:
+            self.currentPlayer = player.BLACK
