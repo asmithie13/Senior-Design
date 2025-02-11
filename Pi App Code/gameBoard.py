@@ -42,53 +42,53 @@ class gameBoard():
             self.tiles[piece.location[0]][piece.location[1]] = piece
         
     def validateMove(self, move):
+        # Out of bounds check
+        if move.start[0] > 7 or move.start[0] < 0 or move.start[1] > 7 or move.start[1] < 0:
+            return False, moveError.START_OUT_OF_BOUNDS
+        if move.end[0] > 7 or move.end[0] < 0 or move.end[1] > 7 or move.end[1] < 0:
+            return False, moveError.END_OUT_OF_BOUNDS
+        
         # Check if start tile is empty
         startPiece = self.tiles[move.start[0]][move.start[1]]
         if startPiece is None:
-            return False, "Invalid move: Start tile is empty."
+            return False, moveError.START_TILE_EMPTY
         
         # Check if end tile is NOT empty
         endPiece = self.tiles[move.end[0]][move.end[1]]
         if endPiece is not None:
-            return False, "Invalid move: End tile is occupied."
+            return False, moveError.END_TILE_OCCUPIED
         
         # Check starting tile is current players piece
         if startPiece.player != self.currentPlayer:
-            return False, "Invalid move: You can only move your own pieces."
-
-        # Out of bounds check
-        if move.start[0] > 7 or move.start[0] < 0 or move.start[1] > 7 or move.start[1] < 0:
-            return False, "Invalid move: Start position out of bounds."
-        if move.end[0] > 7 or move.end[0] < 0 or move.end[1] > 7 or move.end[1] < 0:
-            return False, "Invalid move: End position out of bounds."
+            return False, moveError.WRONG_PLAYER_PIECE
         
         # Direction checks
         if not startPiece.isKing:
             # Direction check for nonking BLACK
             if self.currentPlayer == player.BLACK:
                 if move.start[0] > move.end[0]:
-                    return False, "Invalid move: BLACK pieces must move downward."
+                    return False, moveError.BLACK_WRONG_DIRECTION
             # Direction check for nonking RED
             if self.currentPlayer == player.RED:
                 if move.start[0] < move.end[0]:
-                    return False, "Invalid move: RED pieces must move upward."
+                    return False, moveError.RED_WRONG_DIRECTION
 
         # Diagonal Move Check
         xDistance = abs(move.start[0] - move.end[0])
         yDistance = abs(move.start[1] - move.end[1])
         if xDistance != yDistance:
-            return False, "Invalid move: Pieces must move diagonally."
+            return False, moveError.NOT_DIAGONAL
         
         # Check if distance moved is 1 or 2
         if xDistance != 1 and xDistance != 2:
-            return False, "Invalid move: Distance moved not 1 or 2 across."
+            return False, moveError.INVALID_DISTANCE
         
         # Move Cases...
         # Regular Move
         if xDistance == 1:
             self.regularMove(move)
             self.switchPlayers()
-            return True, "Normal move is made"
+            return True, moveSuccess.NORMAL_MOVE
         else:
             # TODO double jump case
 
@@ -96,13 +96,13 @@ class gameBoard():
             midPoint = [(move.start[0] + move.end[0]) / 2, (move.start[1] + move.end[1]) / 2]
             
             if self.tiles[midPoint[0]][midPoint[1]] is None:
-                return False, "Invalid move: No piece is being taken with this 2 distance move"
+                return False, moveError.NO_PIECE_TO_CAPTURE
             elif self.tiles[midPoint[0]][midPoint[1]].player == self.currentPlayer:
-                return False, "Invalid move: Cannot overtake one's own piece"
+                return False, moveError.FRIENDLY_FIRE
             else:
                 self.overtakeMove(move, midPoint)
                 self.switchPlayers()
-                return True, "Piece is overtaken"
+                return True, moveSuccess.CAPTURE_PIECE
 
 
     def regularMove(self, move):
