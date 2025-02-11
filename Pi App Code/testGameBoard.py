@@ -10,21 +10,21 @@ class testGameBoard(unittest.TestCase):
     # validateMove tests
     def testBoundsCheck(self):
         move1 = move([-1, -1], [2, 2])
-        self.assertEqual(self.gb.validateMove(move1), (False, "Invalid move: Start position out of bounds."))
+        self.assertEqual(self.gb.validateMove(move1), (False, moveError.START_OUT_OF_BOUNDS))
         move2 = move([2, 2], [-1, -1])
-        self.assertEqual(self.gb.validateMove(move2), (False, "Invalid move: End position out of bounds."))
+        self.assertEqual(self.gb.validateMove(move2), (False, moveError.END_OUT_OF_BOUNDS))
 
     def testEmptyStartTile(self):
         move1 = move([0, 0], [1, 2])
-        self.assertEqual(self.gb.validateMove(move1), (False, "Invalid move: Start tile is empty."))
+        self.assertEqual(self.gb.validateMove(move1), (False, moveError.START_TILE_EMPTY))
 
     def testNonEmptyEndTile(self):
         move1 = move([2, 3], [1, 2])
-        self.assertEqual(self.gb.validateMove(move1), (False, "Invalid move: End tile is occupied."))
+        self.assertEqual(self.gb.validateMove(move1), (False, moveError.END_TILE_OCCUPIED))
 
     def testCurrentPiece(self):
         move1 = move([5, 0], [4, 1])
-        self.assertEqual(self.gb.validateMove(move1), (False, "Invalid move: You can only move your own pieces."))
+        self.assertEqual(self.gb.validateMove(move1), (False, moveError.WRONG_PLAYER_PIECE))
     
     def testNonKingPieces(self):
         move1 = move([2, 7], [3, 6])    # moves black down
@@ -35,7 +35,7 @@ class testGameBoard(unittest.TestCase):
         self.gb.validateMove(move1)
         self.gb.validateMove(move2)
 
-        self.assertEqual(self.gb.validateMove(move3), (False, "Invalid move: BLACK pieces must move downward."))
+        self.assertEqual(self.gb.validateMove(move3), (False, moveError.BLACK_WRONG_DIRECTION))
 
 if __name__ == '__main__':
     unittest.main()

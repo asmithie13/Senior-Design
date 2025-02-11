@@ -10,7 +10,7 @@ class player(Enum):
     BLACK = 1
     RED = 2
 
-class moveError(Enum, str):
+class moveError(str, Enum):
     START_OUT_OF_BOUNDS = "Invalid move: Start position out of bounds."
     END_OUT_OF_BOUNDS = "Invalid move: End position out of bounds."
     START_TILE_EMPTY = "Invalid move: Start tile is empty."
@@ -23,7 +23,7 @@ class moveError(Enum, str):
     NO_PIECE_TO_CAPTURE = "Invalid move: No piece is being taken with this 2 distance move."
     FRIENDLY_FIRE = "Invalid move: Cannot overtake one's own piece."
 
-class moveSuccess(Enum, str):
+class moveSuccess(str, Enum):
     NORMAL_MOVE = "Normal move is made"
     CAPTURE_PIECE = "Piece is overtaken"
 
