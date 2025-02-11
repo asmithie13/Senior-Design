@@ -42,6 +42,12 @@ class gameBoard():
             self.tiles[piece.location[0]][piece.location[1]] = piece
         
     def validateMove(self, move):
+        # Out of bounds check
+        if move.start[0] > 7 or move.start[0] < 0 or move.start[1] > 7 or move.start[1] < 0:
+            return False, "Invalid move: Start position out of bounds."
+        if move.end[0] > 7 or move.end[0] < 0 or move.end[1] > 7 or move.end[1] < 0:
+            return False, "Invalid move: End position out of bounds."
+        
         # Check if start tile is empty
         startPiece = self.tiles[move.start[0]][move.start[1]]
         if startPiece is None:
@@ -55,12 +61,6 @@ class gameBoard():
         # Check starting tile is current players piece
         if startPiece.player != self.currentPlayer:
             return False, "Invalid move: You can only move your own pieces."
-
-        # Out of bounds check
-        if move.start[0] > 7 or move.start[0] < 0 or move.start[1] > 7 or move.start[1] < 0:
-            return False, "Invalid move: Start position out of bounds."
-        if move.end[0] > 7 or move.end[0] < 0 or move.end[1] > 7 or move.end[1] < 0:
-            return False, "Invalid move: End position out of bounds."
         
         # Direction checks
         if not startPiece.isKing:
