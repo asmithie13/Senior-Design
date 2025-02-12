@@ -6,6 +6,11 @@ class gamePiece():
         self.location = location
         self.isKing = False
 
+class move():
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+
 class player(Enum):
     BLACK = 1
     RED = 2
@@ -26,8 +31,3 @@ class moveError(str, Enum):
 class moveSuccess(str, Enum):
     NORMAL_MOVE = "Normal move is made"
     CAPTURE_PIECE = "Piece is overtaken"
-
-class move():
-    def __init__(self, start, end):
-        self.start = start
-        self.end = end
