@@ -133,5 +133,24 @@ class testGameBoard(unittest.TestCase):
         self.assertEqual(12, self.gb.blackPieces)
         self.assertEqual(11, self.gb.redPieces)
 
+    def testKingMove(self):
+        move1 = move([2, 7], [3, 6])    # moves black down
+        move2 = move([5, 0], [4, 1])    # moves red up
+        move3 = move([3, 6], [2, 7])    # moves black up
+        move4 = move([4, 1], [5, 0])    # moves red down
+
+        # Hardcode Kings
+        self.gb.tiles[move1.start[0]][move1.start[1]].isKing = True
+        self.gb.tiles[move2.start[0]][move2.start[1]].isKing = True
+
+        self.gb.validateMove(move1) # Move pieces to move back
+        self.gb.validateMove(move2)
+
+        result1 = self.gb.validateMove(move3) # valid BLACK move
+        result2 = self.gb.validateMove(move4)
+
+        self.assertEqual(result1, (True, moveSuccess.NORMAL_MOVE))
+        self.assertEqual(result2, (True, moveSuccess.NORMAL_MOVE))
+
 if __name__ == '__main__':
     unittest.main()
