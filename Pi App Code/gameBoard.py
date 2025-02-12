@@ -93,14 +93,17 @@ class gameBoard():
             return False, MoveError.INVALID_DISTANCE
         
         # Move Cases...
+        # Force double jumps
+        if self.canDoubleJumpFlag:
+            if move not in self.doubleJumpNextMoves:
+                return False, MoveError.MUST_DOUBLE_JUMP
+            
         # Regular Move
         if xDistance == 1:
             self.regularMove(move)
             self.switchPlayers()
             return True, MoveSuccess.NORMAL_MOVE
         else:
-            # TODO double jump case
-
             # One jump case
             midPoint = self.returnMidpoint(move)
             
@@ -114,6 +117,8 @@ class gameBoard():
                 if self.canDoubleJumpFlag:
                     return True, MoveSuccess.DOUBLE_JUMP
                 self.switchPlayers()
+                self.canDoubleJumpFlag = False
+                self.doubleJumpNextMoves = []
                 return True, MoveSuccess.CAPTURE_PIECE
 
 
@@ -169,7 +174,7 @@ class gameBoard():
                 actualNextMoves.append(potentialMove)
 
         self.doubleJumpNextMoves = actualNextMoves
-        if len(self.doubleJumpNextMoves) == 0:
+        if not self.doubleJumpNextMoves:
             self.canDoubleJumpFlag = False
         else:
             self.canDoubleJumpFlag = True

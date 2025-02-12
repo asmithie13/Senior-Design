@@ -27,6 +27,7 @@ class MoveError(str, Enum):
     INVALID_DISTANCE = "Invalid move: Distance moved not 1 or 2 across."
     NO_PIECE_TO_CAPTURE = "Invalid move: No piece is being taken with this 2 distance move."
     FRIENDLY_FIRE = "Invalid move: Cannot overtake one's own piece."
+    MUST_DOUBLE_JUMP = "Invalid move: A double jump must be performed"
 
 class MoveSuccess(str, Enum):
     NORMAL_MOVE = "Normal move is made"
