@@ -3,7 +3,6 @@
 
 //---
 //TO-DO:
-//Enable kings to skip-over and collect other checkers
 //Allow for double-jumps if a player skips over a checker and another skip is available
 //---
 
@@ -108,6 +107,14 @@ void testBoardConfig(){
   Serial.print(playerTwoScore);
 }
 
+//Wait for user keypad input:
+char pollForSelection(){
+  char customKey=customKeypad.getKey();
+  while(customKey==NULL){
+    customKey=customKeypad.getKey();
+  }
+}
+
 //Function that scans the board to check if any king pieces must be awarded:
 void checkForKing(){
   for(int i=0; i<8; i++){
@@ -119,14 +126,6 @@ void checkForKing(){
     else if(checkerBoard[7][i]==1){
       checkerBoard[7][i]+=2;
     }
-  }
-}
-
-//Wait for user keypad input:
-char pollForSelection(){
-  char customKey=customKeypad.getKey();
-  while(customKey==NULL){
-    customKey=customKeypad.getKey();
   }
 }
 
@@ -284,57 +283,6 @@ int checkIfMovePlayerTwo(int coordOne, int coordTwo){
 
   //The piece is on the right outer-edge, and the diagonal-left move is not available:
   if((coordTwoPlus>7 && checkerBoard[coordOneMin][coordTwoMin]!=0) && ((checkerBoard[coordOneMinTwo][coordTwoMinTwo]==0 && checkerBoard[coordOneMin][coordTwoMin]!=1 && checkerBoard[coordOneMin][coordTwoMin]!=3) || checkerBoard[coordOneMinTwo][coordTwoMinTwo]!=0)){
-    return 1;
-  }
-
-  return 0;
-}
-
-//Function to check if the checker being selected has any available moves (this function is only to be used if the...
-//...checker that is attempting to be selected is a king piece for either player):
-int checkIfMoveKing(int coordOne, int coordTwo){
-  //Find if the move to be made would exceed board limits:
-  int coordOneMin, coordOnePlus, coordTwoMin, coordTwoPlus;
-  coordOneMin=coordOne-1;
-  coordOnePlus=coordOne+1;
-  coordTwoMin=coordTwo-1;
-  coordTwoPlus=coordTwo+1;
-
-  if(coordOneMin>=0 && coordOneMin<8 && coordOnePlus>=0 && coordOnePlus<8 && coordTwoMin>=0 && coordTwoMin<8 && coordTwoPlus>=0 && coordTwoPlus<8){
-    Serial.print("1");
-    if(checkerBoard[coordOne-1][coordTwo-1]!=0 && checkerBoard[coordOne-1][coordTwo+1]!=0 && checkerBoard[coordOne+1][coordTwo-1]!=0 && checkerBoard[coordOne+1][coordTwo+1]!=0){
-      Serial.print("2");
-      return 1;
-    }
-  }
-
-  if(coordOneMin<0 && coordTwoMin<0 && checkerBoard[coordOne+1][coordTwo+1]!=0){
-    Serial.print("3");
-    return 1;
-  }
-
-  if(coordOnePlus>7 && coordTwoPlus>7 && checkerBoard[coordOne-1][coordTwo-1]!=0){
-    Serial.print("4");
-    return 1;
-  }
-
-  if(coordOneMin<0 && checkerBoard[coordOne+1][coordTwo+1]!=0 && checkerBoard[coordOne+1][coordTwo-1]!=0){
-    Serial.print("5");
-    return 1;
-  }
-
-  if(coordOnePlus>7 && checkerBoard[coordOne-1][coordTwo+1]!=0 && checkerBoard[coordOne-1][coordTwo-1]!=0){
-    Serial.print("6");
-    return 1;
-  }
-
-  if(coordTwoMin<0 && checkerBoard[coordOne-1][coordTwo+1]!=0 && checkerBoard[coordOne+1][coordTwo+1]!=0){
-    Serial.print("7");
-    return 1;
-  }
-
-  if(coordTwoPlus>7 && checkerBoard[coordOne-1][coordTwo-1]!=0 && checkerBoard[coordOne+1][coordTwo-1]!=0){
-    Serial.print("8");
     return 1;
   }
 
@@ -501,7 +449,38 @@ void moveChecker(){
   //Check after the move to see if any king pieces need to be set:
   checkForKing();
 
+  //Check to see if there is a winner:
+  checkForWinner();
+
   //TEST:
   testBoardConfig();
 }
 
+//Check to see if the game is over, and award a winner:
+void checkForWinner(){
+  //Variables to hold each player's checkers:
+  int playerOneNum=0;
+  int playerTwoNum=0;
+
+  //Iterate through the board, and if the board only consists of one player's pieces, someone has won:
+  for(int i=0; i<8; i++){
+    for(int j=0; j<8; j++){
+      if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
+        playerOneNum++;
+      }
+      else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
+        playerTwoNum++;
+      }
+    }
+  }
+
+  //Declare the winner, if there is one:
+  if(playerOneNum==0){
+    Serial.print("\nWINNER: Player #2");
+    //Enter an infinite loop, that is only exited if the player presses the button indicating a new game:
+    //Also, consider playing a win sequence here
+  }
+  else if(playerTwoNum==0){
+    Serial.print("\nWINNER: Player #1");
+  }
+}
