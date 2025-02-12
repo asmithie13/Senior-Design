@@ -506,7 +506,7 @@ void checkForWinner(){
 
 //Set-up the initial board, with each player's pieces:
 void setup(){
-  //TEST:
+  //Begin serial communication:
   Serial.begin(9600);
 
   //The first player in-turn is Player #1:
