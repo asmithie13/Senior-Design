@@ -50,10 +50,36 @@ class testGameBoard(unittest.TestCase):
         move1 = move([0, 1], [3, 4])
         self.assertEqual(self.gb.validateMove(move1), (False, moveError.INVALID_DISTANCE))
 
-    def testRegularMove(self):
+    def testRegularMoveCase(self):
         move1 = move([2, 7], [3, 6])
         result1 = self.gb.validateMove(move1)
-        # FINSH
+        self.assertEqual(result1, (True, moveSuccess.NORMAL_MOVE))
+
+    def testRegularMoveFunction(self):
+        move1 = move([2, 7], [3, 6])
+        gpiece1 = gamePiece(player.BLACK, [2, 7])
+        startPiece = self.gb.tiles[move1.start[0]][move1.start[1]]
+        
+        # before move
+        self.assertEqual(gpiece1.player, startPiece.player)
+        self.assertEqual(gpiece1.location, startPiece.location)
+        self.assertEqual(gpiece1.isKing, startPiece.isKing)
+        self.assertIsNone(self.gb.tiles[move1.end[0]][move1.end[1]])
+        
+        self.gb.regularMove(move1)
+        # after move
+        gpiece2 = gamePiece(player.BLACK, [3, 6])
+        endPiece = self.gb.tiles[move1.end[0]][move1.end[1]]
+
+        self.assertEqual(gpiece2.player, endPiece.player)
+        self.assertEqual(gpiece2.location, endPiece.location)
+        self.assertEqual(gpiece2.isKing, endPiece.isKing)
+        self.assertIsNone(self.gb.tiles[move1.start[0]][move1.start[1]])
+
+    def testNoPieceToCapture(self):
+        move1 = move([2, 7], [4, 5])
+        result1 = self.gb.validateMove(move1)
+        self.assertEqual(result1, (False, moveError.NO_PIECE_TO_CAPTURE))
 
 if __name__ == '__main__':
     unittest.main()

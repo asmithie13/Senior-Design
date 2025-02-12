@@ -93,7 +93,7 @@ class gameBoard():
             # TODO double jump case
 
             # One jump case
-            midPoint = [(move.start[0] + move.end[0]) / 2, (move.start[1] + move.end[1]) / 2]
+            midPoint = [(move.start[0] + move.end[0]) // 2, (move.start[1] + move.end[1]) // 2]
             
             if self.tiles[midPoint[0]][midPoint[1]] is None:
                 return False, moveError.NO_PIECE_TO_CAPTURE
