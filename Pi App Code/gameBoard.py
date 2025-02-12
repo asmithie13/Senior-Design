@@ -134,3 +134,6 @@ class gameBoard():
             self.tiles[move.end[0]][move.end[1]].isKing = True
         elif self.tiles[move.end[0]][move.end[1]].location[0] == 0 and self.tiles[move.end[0]][move.end[1]].player == player.RED:
             self.tiles[move.end[0]][move.end[1]].isKing = True
+
+    def handleReset(self):
+        self.__init__()
