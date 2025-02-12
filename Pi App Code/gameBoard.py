@@ -9,7 +9,10 @@ class gameBoard():
         self.blackPieces = 12
 
         # bool to track if double jump is possinle
-        self.canDoubleJump = False
+        self.canDoubleJumpFlag = False
+
+        # moves that need to be selected if there is a valid double jump
+        self.doubleJumpNextMoves = []
 
         # initialize all orginal pieces
         gamePieces = [
@@ -107,6 +110,9 @@ class gameBoard():
                 return False, MoveError.FRIENDLY_FIRE
             else:
                 self.overtakeMove(move, midPoint)
+                self.canDoubleJump(move)
+                if self.canDoubleJumpFlag:
+                    return True, MoveSuccess.DOUBLE_JUMP
                 self.switchPlayers()
                 return True, MoveSuccess.CAPTURE_PIECE
 
@@ -159,6 +165,12 @@ class gameBoard():
 
         for potentialMove in potentialMoves:
             midpoint = self.returnMidpoint(potentialMove)
-            if self.tiles[midpoint[0]][midpoint[1]] is not None and self.tiles[midpoint[0]][midpoint[1]].player != self.currentPlayer:
-                actualNextMoves.append(Move(oldMove.end, potentialMove))
+            if self.tiles[midpoint[0]][midpoint[1]] is not None and self.tiles[midpoint[0]][midpoint[1]].player != self.currentPlayer and self.tiles[potentialMove.end[0]][potentialMove.end[1]] is None:
+                actualNextMoves.append(potentialMove)
+
+        self.doubleJumpNextMoves = actualNextMoves
+        if len(self.doubleJumpNextMoves) == 0:
+            self.canDoubleJumpFlag = False
+        else:
+            self.canDoubleJumpFlag = True
   

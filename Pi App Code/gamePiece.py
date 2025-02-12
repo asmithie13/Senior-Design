@@ -31,3 +31,4 @@ class MoveError(str, Enum):
 class MoveSuccess(str, Enum):
     NORMAL_MOVE = "Normal move is made"
     CAPTURE_PIECE = "Piece is overtaken"
+    DOUBLE_JUMP = "Piece is overtaken. Must double jump."
