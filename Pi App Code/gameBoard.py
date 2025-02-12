@@ -1,6 +1,10 @@
+import serial
 from gamePiece import *
 class gameBoard():
     def __init__(self):
+        # Set up bluetooth module but do not connect yet
+        self.bluetoothObject = None
+
         # black pieces always move first
         self.currentPlayer = player.BLACK
 
@@ -40,6 +44,13 @@ class gameBoard():
         self.tiles = [[None] * 8 for _ in range(8)]
         for piece in gamePieces:
             self.tiles[piece.location[0]][piece.location[1]] = piece
+
+    def connectBluetooth(self, com='COM6', baud=9600, timeout=1):
+        try:
+            self.bluetoothObject = serial.Serial(self, com, baud, timeout)
+            print(f"Connected to {com}")
+        except serial.SerialException as e:
+            print(f"Failed to connect: {e}")
         
     def validateMove(self, move):
         # Out of bounds check
