@@ -152,5 +152,35 @@ class testGameBoard(unittest.TestCase):
         self.assertEqual(result1, (True, moveSuccess.NORMAL_MOVE))
         self.assertEqual(result2, (True, moveSuccess.NORMAL_MOVE))
 
+    def testReset(self):
+        move1 = move([2, 7], [3, 6])
+        gpiece1 = gamePiece(player.BLACK, [2, 7])
+        startPiece = self.gb.tiles[move1.start[0]][move1.start[1]]
+        
+        # before move
+        self.assertEqual(gpiece1.player, startPiece.player)
+        self.assertEqual(gpiece1.location, startPiece.location)
+        self.assertEqual(gpiece1.isKing, startPiece.isKing)
+        self.assertIsNone(self.gb.tiles[move1.end[0]][move1.end[1]])
+        
+        self.gb.regularMove(move1)
+        # after move
+        gpiece2 = gamePiece(player.BLACK, [3, 6])
+        endPiece = self.gb.tiles[move1.end[0]][move1.end[1]]
+
+        self.assertEqual(gpiece2.player, endPiece.player)
+        self.assertEqual(gpiece2.location, endPiece.location)
+        self.assertEqual(gpiece2.isKing, endPiece.isKing)
+        self.assertIsNone(self.gb.tiles[move1.start[0]][move1.start[1]])
+
+        # reset
+        self.gb.handleReset()
+        tile1 = self.gb.tiles[move1.start[0]][move1.start[1]]
+        tile2 = self.gb.tiles[move1.end[0]][move1.end[1]]
+        
+        self.assertIsNotNone(tile1)
+        self.assertIsNone(tile2)
+
+
 if __name__ == '__main__':
     unittest.main()
