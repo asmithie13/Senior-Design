@@ -52,8 +52,10 @@ class testGameBoard(unittest.TestCase):
 
     def testRegularMoveCase(self):
         move1 = move([2, 7], [3, 6])
+        self.assertEqual(self.gb.currentPlayer, player.BLACK)
         result1 = self.gb.validateMove(move1)
         self.assertEqual(result1, (True, moveSuccess.NORMAL_MOVE))
+        self.assertEqual(self.gb.currentPlayer, player.RED)
 
     def testRegularMoveFunction(self):
         move1 = move([2, 7], [3, 6])
@@ -80,6 +82,56 @@ class testGameBoard(unittest.TestCase):
         move1 = move([2, 7], [4, 5])
         result1 = self.gb.validateMove(move1)
         self.assertEqual(result1, (False, moveError.NO_PIECE_TO_CAPTURE))
+
+    def testFriendlyFire(self):
+        move1 = move([1, 2], [3, 4])
+        result1 = self.gb.validateMove(move1)
+        self.assertEqual(result1, (False, moveError.FRIENDLY_FIRE))
+
+    def testCapturePiece(self):
+        move1 = move([2, 7], [3, 6])
+        move2 = move([5, 4], [4, 5])
+        move3 = move([3, 6], [5, 4])
+        self.gb.validateMove(move1)
+        self.gb.validateMove(move2)
+        result1 = self.gb.validateMove(move3)
+        self.assertEqual(result1, (True, moveSuccess.CAPTURE_PIECE))
+
+    def testOvertakeMoveFunction(self):
+        move1 = move([2, 7], [3, 6])
+        move2 = move([5, 4], [4, 5])
+        move3 = move([3, 6], [5, 4])
+
+        self.gb.validateMove(move1)
+        self.gb.validateMove(move2)
+
+        gpiece1 = gamePiece(player.BLACK, [3, 6])
+        startPiece1 = self.gb.tiles[move1.end[0]][move1.end[1]]
+        gpiece2 = gamePiece(player.RED, [4, 5])
+        startPiece2 = self.gb.tiles[move2.end[0]][move2.end[1]]
+        
+        # before jump
+        self.assertEqual(gpiece1.player, startPiece1.player)
+        self.assertEqual(gpiece1.location, startPiece1.location)
+        self.assertEqual(gpiece1.isKing, startPiece1.isKing)
+        
+        self.assertEqual(gpiece2.player, startPiece2.player)
+        self.assertEqual(gpiece2.location, startPiece2.location)
+        self.assertEqual(gpiece2.isKing, startPiece2.isKing)
+
+        self.gb.overtakeMove(move3, [4, 5])
+        gpiece3 = gamePiece(player.BLACK, [5, 4])
+        endPiece = self.gb.tiles[move3.end[0]][move3.end[1]]
+
+        # after jump
+        self.assertEqual(gpiece3.player, endPiece.player)
+        self.assertEqual(gpiece3.location, endPiece.location)
+        self.assertEqual(gpiece3.isKing, endPiece.isKing)
+
+        self.assertIsNone(self.gb.tiles[4][5])
+
+        self.assertEqual(12, self.gb.blackPieces)
+        self.assertEqual(11, self.gb.redPieces)
 
 if __name__ == '__main__':
     unittest.main()
