@@ -41,6 +41,10 @@ int playerTwoScore=0;
 //Flag that determines if the player just jumped, meaning that there is a possibility to double-jump:
 bool inJump=false;
 
+//Reset button pins for each player:
+int playerOneReset=2;
+int playerTwoReset=3;
+
 //Function that prints the configuration of the board after each move:
 void testBoardConfig(){
   Serial.print("\nBoard Configuration:");
@@ -62,6 +66,15 @@ void testBoardConfig(){
 char pollForSelection(){
   char customKey=customKeypad.getKey();
   while(customKey==NULL){
+    //Add reset buttons for each player that they may press at any point when the game prompts input. Later, functionality...
+    //...will be added that calls the end-of-game function:
+    if(digitalRead(2)==HIGH){
+      Serial.print("Player #1 Forfeits");
+    }
+    else if(digitalRead(3)==HIGH){
+      Serial.print("Player #1 Forfeits");
+    }
+    
     customKey=customKeypad.getKey();
   }
 }
@@ -508,6 +521,10 @@ void checkForWinner(){
 void setup(){
   //Begin serial communication:
   Serial.begin(9600);
+
+  //Initialize the reset button pins:
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
 
   //The first player in-turn is Player #1:
   playerInTurn.playerNum=1;
