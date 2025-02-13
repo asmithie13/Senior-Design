@@ -1,5 +1,5 @@
 from GamePiece import *
-class gameBoard():
+class GameBoard():
     def __init__(self):
         # Fill the tiles
         self.tiles = [[None] * 8 for _ in range(8)]
@@ -88,10 +88,6 @@ class gameBoard():
         
         # Move Cases...
         # Force double jumps
-        #if self.canDoubleJumpFlag:
-         #   if move not in self.doubleJumpNextMoves:
-          #      return False, MoveError.MUST_DOUBLE_JUMP
-            
         if self.canDoubleJumpFlag:
             moveIn = False
             for nextMove in self.doubleJumpNextMoves:

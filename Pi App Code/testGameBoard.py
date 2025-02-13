@@ -5,7 +5,7 @@ from GamePiece import *
 class TestGameBoard(unittest.TestCase):
     
     def setUp(self):
-        self.gb = gameBoard()
+        self.gb = GameBoard()
 
     # validateMove tests
     def testBoundsCheck(self):
