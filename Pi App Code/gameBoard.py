@@ -47,7 +47,7 @@ class gameBoard():
         
         for piece in gamePieces:
             self.tiles[piece.location[0]][piece.location[1]] = piece
-        
+
     def handleReset(self):
         self.__init__()
 
@@ -88,9 +88,18 @@ class gameBoard():
         
         # Move Cases...
         # Force double jumps
+        #if self.canDoubleJumpFlag:
+         #   if move not in self.doubleJumpNextMoves:
+          #      return False, MoveError.MUST_DOUBLE_JUMP
+            
         if self.canDoubleJumpFlag:
-            if move not in self.doubleJumpNextMoves:
-                return False, MoveError.MUST_DOUBLE_JUMP
+            moveIn = False
+            for nextMove in self.doubleJumpNextMoves:
+                if move.start == nextMove.start and move.end == nextMove.end:
+                    moveIn = True
+                    break
+
+            if not moveIn: return False, MoveError.MUST_DOUBLE_JUMP
             
         # Regular Move
         if xDistance == 1:

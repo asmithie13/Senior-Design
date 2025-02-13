@@ -181,6 +181,36 @@ class TestGameBoard(unittest.TestCase):
         self.assertIsNotNone(tile1)
         self.assertIsNone(tile2)
 
+    def testSingleDoubleJump(self):
+        move1 = Move([2, 5], [3, 4])
+        move2 = Move([5, 0], [4, 1])
+        move3 = Move([3, 4], [4, 3])
+        move4 = Move([5, 6], [4, 7])
+        move5 = Move([1, 6], [2, 5])
+        move6 = Move([5, 2], [3, 4])
+        move7 = Move([3, 4], [1, 6])    # double jump
+
+        result1 = self.gb.validateMove(move1)
+        result2 = self.gb.validateMove(move2)
+        result3 = self.gb.validateMove(move3)
+        result4 = self.gb.validateMove(move4)
+        result5 = self.gb.validateMove(move5)
+
+        self.assertEqual(result1, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result2, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result3, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result4, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result5, (True, MoveSuccess.NORMAL_MOVE))
+
+        # perform double jump
+        self.assertEqual(self.gb.currentPlayer, Player.RED)
+        result6 = self.gb.validateMove(move6)
+        self.assertEqual(self.gb.currentPlayer, Player.RED)
+        result7 = self.gb.validateMove(move7)
+
+        self.assertEqual(result6, (True, MoveSuccess.DOUBLE_JUMP))
+        self.assertEqual(result7, (True, MoveSuccess.CAPTURE_PIECE))
+        self.assertEqual(self.gb.currentPlayer, Player.BLACK)
 
 if __name__ == '__main__':
     unittest.main()
