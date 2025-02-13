@@ -1,4 +1,4 @@
-from GamePiece import *
+from gamePiece import *
 class GameBoard():
     def __init__(self):
         # Fill the tiles
