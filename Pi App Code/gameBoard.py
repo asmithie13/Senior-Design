@@ -1,6 +1,8 @@
 from GamePiece import *
 class gameBoard():
     def __init__(self):
+        # Fill the tiles
+        self.tiles = [[None] * 8 for _ in range(8)]
         # black pieces always move first
         self.currentPlayer = Player.BLACK
 
@@ -42,8 +44,7 @@ class gameBoard():
             GamePiece(Player.RED, [7, 6])
         ]
 
-        # Fill the tiles
-        self.tiles = [[None] * 8 for _ in range(8)]
+        
         for piece in gamePieces:
             self.tiles[piece.location[0]][piece.location[1]] = piece
         
@@ -71,16 +72,9 @@ class gameBoard():
         if startPiece.player != self.currentPlayer:
             return False, MoveError.WRONG_PLAYER_PIECE
         
-        # Direction checks
-        if not startPiece.isKing:
-            # Direction check for nonking BLACK
-            if self.currentPlayer == Player.BLACK:
-                if move.start[0] > move.end[0]:
-                    return False, MoveError.BLACK_WRONG_DIRECTION
-            # Direction check for nonking RED
-            if self.currentPlayer == Player.RED:
-                if move.start[0] < move.end[0]:
-                    return False, MoveError.RED_WRONG_DIRECTION
+        # Check for king move
+        kingResult = self.kingMoveCheck(move)
+        if not kingResult[0]: return kingResult
 
         # Diagonal Move Check
         xDistance = abs(move.start[0] - move.end[0])
@@ -149,6 +143,21 @@ class gameBoard():
         elif self.currentPlayer == Player.RED:
             self.currentPlayer = Player.BLACK
     
+    def kingMoveCheck(self, move):
+        startPiece = self.tiles[move.start[0]][move.start[1]]
+        # Direction checks
+        if not startPiece.isKing:
+            # Direction check for nonking BLACK
+            if self.currentPlayer == Player.BLACK:
+                if move.start[0] > move.end[0]:
+                    return False, MoveError.BLACK_WRONG_DIRECTION
+            # Direction check for nonking RED
+            if self.currentPlayer == Player.RED:
+                if move.start[0] < move.end[0]:
+                    return False, MoveError.RED_WRONG_DIRECTION
+                
+        return True, None
+    
     def checkKing(self, move):
         if self.tiles[move.end[0]][move.end[1]].location[0] == 7 and self.tiles[move.end[0]][move.end[1]].player == Player.BLACK:
             self.tiles[move.end[0]][move.end[1]].isKing = True
@@ -160,17 +169,25 @@ class gameBoard():
         actualNextMoves = []
 
         if oldMove.end[0] + 2 <= 7 and oldMove.end[0] + 2 >= 0 and oldMove.end[1] + 2 <= 7 and oldMove.end[1] + 2 >= 0:
-            potentialMoves.append(Move(oldMove.end, [oldMove.end[0] + 2, oldMove.end[1] + 2]))
+            if self.kingMoveCheck(Move(oldMove.end, [oldMove.end[0] + 2, oldMove.end[1] + 2]))[0]: 
+                potentialMoves.append(Move(oldMove.end, [oldMove.end[0] + 2, oldMove.end[1] + 2]))
         if oldMove.end[0] - 2 <= 7 and oldMove.end[0] - 2 >= 0 and oldMove.end[1] + 2 <= 7 and oldMove.end[1] + 2 >= 0:
-            potentialMoves.append(Move(oldMove.end, [oldMove.end[0] - 2, oldMove.end[1] + 2]))
+            if self.kingMoveCheck(Move(oldMove.end, [oldMove.end[0] - 2, oldMove.end[1] + 2]))[0]:
+                potentialMoves.append(Move(oldMove.end, [oldMove.end[0] - 2, oldMove.end[1] + 2]))
         if oldMove.end[0] + 2 <= 7 and oldMove.end[0] + 2 >= 0 and oldMove.end[1] - 2 <= 7 and oldMove.end[1] - 2 >= 0:
-            potentialMoves.append(Move(oldMove.end, [oldMove.end[0] + 2, oldMove.end[1] - 2]))
+            if self.kingMoveCheck(Move(oldMove.end, [oldMove.end[0] + 2, oldMove.end[1] - 2]))[0]:
+                potentialMoves.append(Move(oldMove.end, [oldMove.end[0] + 2, oldMove.end[1] - 2]))
         if oldMove.end[0] - 2 <= 7 and oldMove.end[0] - 2 >= 0 and oldMove.end[1] - 2 <= 7 and oldMove.end[1] - 2 >= 0:
-            potentialMoves.append(Move(oldMove.end, [oldMove.end[0] - 2, oldMove.end[1] - 2]))
+            if self.kingMoveCheck(Move(oldMove.end, [oldMove.end[0] - 2, oldMove.end[1] - 2]))[0]:
+                potentialMoves.append(Move(oldMove.end, [oldMove.end[0] - 2, oldMove.end[1] - 2]))
 
         for potentialMove in potentialMoves:
             midpoint = self.returnMidpoint(potentialMove)
-            if self.tiles[midpoint[0]][midpoint[1]] is not None and self.tiles[midpoint[0]][midpoint[1]].player != self.currentPlayer and self.tiles[potentialMove.end[0]][potentialMove.end[1]] is None:
+            if (
+                self.tiles[midpoint[0]][midpoint[1]] is not None 
+                and self.tiles[midpoint[0]][midpoint[1]].player != self.currentPlayer 
+                and self.tiles[potentialMove.end[0]][potentialMove.end[1]] is None
+            ):
                 actualNextMoves.append(potentialMove)
 
         self.doubleJumpNextMoves = actualNextMoves
