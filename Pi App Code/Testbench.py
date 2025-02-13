@@ -1,6 +1,6 @@
 import numpy as np
-from gameBoard import *
-from gamePiece import *
+from GameBoard import *
+from GamePiece import *
 
 def fillVisual(gb, visArr):
     for i in range(8):

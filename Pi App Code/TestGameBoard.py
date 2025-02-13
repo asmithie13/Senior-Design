@@ -1,6 +1,6 @@
 import unittest
-from gameBoard import *
-from gamePiece import *
+from GameBoard import *
+from GamePiece import *
 
 class TestGameBoard(unittest.TestCase):
     
