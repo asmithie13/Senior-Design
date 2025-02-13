@@ -2,64 +2,64 @@ import unittest
 from gameBoard import *
 from gamePiece import *
 
-class testGameBoard(unittest.TestCase):
+class TestGameBoard(unittest.TestCase):
     
     def setUp(self):
-        self.gb = gameBoard()
+        self.gb = GameBoard()
 
     # validateMove tests
     def testBoundsCheck(self):
-        move1 = move([-1, -1], [2, 2])
-        self.assertEqual(self.gb.validateMove(move1), (False, moveError.START_OUT_OF_BOUNDS))
-        move2 = move([2, 2], [-1, -1])
-        self.assertEqual(self.gb.validateMove(move2), (False, moveError.END_OUT_OF_BOUNDS))
+        move1 = Move([-1, -1], [2, 2])
+        self.assertEqual(self.gb.validateMove(move1), (False, MoveError.START_OUT_OF_BOUNDS))
+        move2 = Move([2, 2], [-1, -1])
+        self.assertEqual(self.gb.validateMove(move2), (False, MoveError.END_OUT_OF_BOUNDS))
 
     def testEmptyStartTile(self):
-        move1 = move([0, 0], [1, 2])
-        self.assertEqual(self.gb.validateMove(move1), (False, moveError.START_TILE_EMPTY))
+        move1 = Move([0, 0], [1, 2])
+        self.assertEqual(self.gb.validateMove(move1), (False, MoveError.START_TILE_EMPTY))
 
     def testNonEmptyEndTile(self):
-        move1 = move([2, 3], [1, 2])
-        self.assertEqual(self.gb.validateMove(move1), (False, moveError.END_TILE_OCCUPIED))
+        move1 = Move([2, 3], [1, 2])
+        self.assertEqual(self.gb.validateMove(move1), (False, MoveError.END_TILE_OCCUPIED))
 
     def testCurrentPiece(self):
-        move1 = move([5, 0], [4, 1])
-        self.assertEqual(self.gb.validateMove(move1), (False, moveError.WRONG_PLAYER_PIECE))
+        move1 = Move([5, 0], [4, 1])
+        self.assertEqual(self.gb.validateMove(move1), (False, MoveError.WRONG_PLAYER_PIECE))
     
     def testNonKingPieces(self):
-        move1 = move([2, 7], [3, 6])    # moves black down
-        move2 = move([5, 0], [4, 1])    # moves red up
-        move3 = move([3, 6], [2, 7])    # moves black up
-        move4 = move([4, 1], [5, 0])    # moves red down
+        move1 = Move([2, 7], [3, 6])    # moves black down
+        move2 = Move([5, 0], [4, 1])    # moves red up
+        move3 = Move([3, 6], [2, 7])    # moves black up
+        move4 = Move([4, 1], [5, 0])    # moves red down
 
         self.gb.validateMove(move1) # Move pieces to move back
         self.gb.validateMove(move2)
 
         result1 = self.gb.validateMove(move3) # invalid BLACK move
-        self.gb.validateMove(move([3, 6], [4, 7])) # valid move to change the turn
+        self.gb.validateMove(Move([3, 6], [4, 7])) # valid move to change the turn
         result2 = self.gb.validateMove(move4)
 
-        self.assertEqual(result1, (False, moveError.BLACK_WRONG_DIRECTION))
-        self.assertEqual(result2, (False, moveError.RED_WRONG_DIRECTION))
+        self.assertEqual(result1, (False, MoveError.BLACK_WRONG_DIRECTION))
+        self.assertEqual(result2, (False, MoveError.RED_WRONG_DIRECTION))
 
     def testDiagonalMove(self):
-        move1 = move([2, 7], [3, 7])
-        self.assertEqual(self.gb.validateMove(move1), (False, moveError.NOT_DIAGONAL))
+        move1 = Move([2, 7], [3, 7])
+        self.assertEqual(self.gb.validateMove(move1), (False, MoveError.NOT_DIAGONAL))
 
     def testInvalidDistance(self):
-        move1 = move([0, 1], [3, 4])
-        self.assertEqual(self.gb.validateMove(move1), (False, moveError.INVALID_DISTANCE))
+        move1 = Move([0, 1], [3, 4])
+        self.assertEqual(self.gb.validateMove(move1), (False, MoveError.INVALID_DISTANCE))
 
     def testRegularMoveCase(self):
-        move1 = move([2, 7], [3, 6])
-        self.assertEqual(self.gb.currentPlayer, player.BLACK)
+        move1 = Move([2, 7], [3, 6])
+        self.assertEqual(self.gb.currentPlayer, Player.BLACK)
         result1 = self.gb.validateMove(move1)
-        self.assertEqual(result1, (True, moveSuccess.NORMAL_MOVE))
-        self.assertEqual(self.gb.currentPlayer, player.RED)
+        self.assertEqual(result1, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(self.gb.currentPlayer, Player.RED)
 
     def testRegularMoveFunction(self):
-        move1 = move([2, 7], [3, 6])
-        gpiece1 = gamePiece(player.BLACK, [2, 7])
+        move1 = Move([2, 7], [3, 6])
+        gpiece1 = GamePiece(Player.BLACK, [2, 7])
         startPiece = self.gb.tiles[move1.start[0]][move1.start[1]]
         
         # before move
@@ -70,7 +70,7 @@ class testGameBoard(unittest.TestCase):
         
         self.gb.regularMove(move1)
         # after move
-        gpiece2 = gamePiece(player.BLACK, [3, 6])
+        gpiece2 = GamePiece(Player.BLACK, [3, 6])
         endPiece = self.gb.tiles[move1.end[0]][move1.end[1]]
 
         self.assertEqual(gpiece2.player, endPiece.player)
@@ -79,35 +79,35 @@ class testGameBoard(unittest.TestCase):
         self.assertIsNone(self.gb.tiles[move1.start[0]][move1.start[1]])
 
     def testNoPieceToCapture(self):
-        move1 = move([2, 7], [4, 5])
+        move1 = Move([2, 7], [4, 5])
         result1 = self.gb.validateMove(move1)
-        self.assertEqual(result1, (False, moveError.NO_PIECE_TO_CAPTURE))
+        self.assertEqual(result1, (False, MoveError.NO_PIECE_TO_CAPTURE))
 
     def testFriendlyFire(self):
-        move1 = move([1, 2], [3, 4])
+        move1 = Move([1, 2], [3, 4])
         result1 = self.gb.validateMove(move1)
-        self.assertEqual(result1, (False, moveError.FRIENDLY_FIRE))
+        self.assertEqual(result1, (False, MoveError.FRIENDLY_FIRE))
 
     def testCapturePiece(self):
-        move1 = move([2, 7], [3, 6])
-        move2 = move([5, 4], [4, 5])
-        move3 = move([3, 6], [5, 4])
+        move1 = Move([2, 7], [3, 6])
+        move2 = Move([5, 4], [4, 5])
+        move3 = Move([3, 6], [5, 4])
         self.gb.validateMove(move1)
         self.gb.validateMove(move2)
         result1 = self.gb.validateMove(move3)
-        self.assertEqual(result1, (True, moveSuccess.CAPTURE_PIECE))
+        self.assertEqual(result1, (True, MoveSuccess.CAPTURE_PIECE))
 
     def testOvertakeMoveFunction(self):
-        move1 = move([2, 7], [3, 6])
-        move2 = move([5, 4], [4, 5])
-        move3 = move([3, 6], [5, 4])
+        move1 = Move([2, 7], [3, 6])
+        move2 = Move([5, 4], [4, 5])
+        move3 = Move([3, 6], [5, 4])
 
         self.gb.validateMove(move1)
         self.gb.validateMove(move2)
 
-        gpiece1 = gamePiece(player.BLACK, [3, 6])
+        gpiece1 = GamePiece(Player.BLACK, [3, 6])
         startPiece1 = self.gb.tiles[move1.end[0]][move1.end[1]]
-        gpiece2 = gamePiece(player.RED, [4, 5])
+        gpiece2 = GamePiece(Player.RED, [4, 5])
         startPiece2 = self.gb.tiles[move2.end[0]][move2.end[1]]
         
         # before jump
@@ -120,7 +120,7 @@ class testGameBoard(unittest.TestCase):
         self.assertEqual(gpiece2.isKing, startPiece2.isKing)
 
         self.gb.overtakeMove(move3, [4, 5])
-        gpiece3 = gamePiece(player.BLACK, [5, 4])
+        gpiece3 = GamePiece(Player.BLACK, [5, 4])
         endPiece = self.gb.tiles[move3.end[0]][move3.end[1]]
 
         # after jump
@@ -134,10 +134,10 @@ class testGameBoard(unittest.TestCase):
         self.assertEqual(11, self.gb.redPieces)
 
     def testKingMove(self):
-        move1 = move([2, 7], [3, 6])    # moves black down
-        move2 = move([5, 0], [4, 1])    # moves red up
-        move3 = move([3, 6], [2, 7])    # moves black up
-        move4 = move([4, 1], [5, 0])    # moves red down
+        move1 = Move([2, 7], [3, 6])    # moves black down
+        move2 = Move([5, 0], [4, 1])    # moves red up
+        move3 = Move([3, 6], [2, 7])    # moves black up
+        move4 = Move([4, 1], [5, 0])    # moves red down
 
         # Hardcode Kings
         self.gb.tiles[move1.start[0]][move1.start[1]].isKing = True
@@ -149,12 +149,12 @@ class testGameBoard(unittest.TestCase):
         result1 = self.gb.validateMove(move3) # valid BLACK move
         result2 = self.gb.validateMove(move4)
 
-        self.assertEqual(result1, (True, moveSuccess.NORMAL_MOVE))
-        self.assertEqual(result2, (True, moveSuccess.NORMAL_MOVE))
+        self.assertEqual(result1, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result2, (True, MoveSuccess.NORMAL_MOVE))
 
     def testReset(self):
-        move1 = move([2, 7], [3, 6])
-        gpiece1 = gamePiece(player.BLACK, [2, 7])
+        move1 = Move([2, 7], [3, 6])
+        gpiece1 = GamePiece(Player.BLACK, [2, 7])
         startPiece = self.gb.tiles[move1.start[0]][move1.start[1]]
         
         # before move
@@ -165,7 +165,7 @@ class testGameBoard(unittest.TestCase):
         
         self.gb.regularMove(move1)
         # after move
-        gpiece2 = gamePiece(player.BLACK, [3, 6])
+        gpiece2 = GamePiece(Player.BLACK, [3, 6])
         endPiece = self.gb.tiles[move1.end[0]][move1.end[1]]
 
         self.assertEqual(gpiece2.player, endPiece.player)
@@ -181,6 +181,36 @@ class testGameBoard(unittest.TestCase):
         self.assertIsNotNone(tile1)
         self.assertIsNone(tile2)
 
+    def testSingleDoubleJump(self):
+        move1 = Move([2, 5], [3, 4])
+        move2 = Move([5, 0], [4, 1])
+        move3 = Move([3, 4], [4, 3])
+        move4 = Move([5, 6], [4, 7])
+        move5 = Move([1, 6], [2, 5])
+        move6 = Move([5, 2], [3, 4])
+        move7 = Move([3, 4], [1, 6])    # double jump
+
+        result1 = self.gb.validateMove(move1)
+        result2 = self.gb.validateMove(move2)
+        result3 = self.gb.validateMove(move3)
+        result4 = self.gb.validateMove(move4)
+        result5 = self.gb.validateMove(move5)
+
+        self.assertEqual(result1, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result2, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result3, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result4, (True, MoveSuccess.NORMAL_MOVE))
+        self.assertEqual(result5, (True, MoveSuccess.NORMAL_MOVE))
+
+        # perform double jump
+        self.assertEqual(self.gb.currentPlayer, Player.RED)
+        result6 = self.gb.validateMove(move6)
+        self.assertEqual(self.gb.currentPlayer, Player.RED)
+        result7 = self.gb.validateMove(move7)
+
+        self.assertEqual(result6, (True, MoveSuccess.DOUBLE_JUMP))
+        self.assertEqual(result7, (True, MoveSuccess.CAPTURE_PIECE))
+        self.assertEqual(self.gb.currentPlayer, Player.BLACK)
 
 if __name__ == '__main__':
     unittest.main()
