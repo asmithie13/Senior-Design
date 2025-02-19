@@ -1,6 +1,11 @@
 //Program to implement checkers logic (used within manual operation):
 #include <Keypad.h>
 
+//---
+//TO-DO:
+//Allow for double-jumps if a player skips over a checker and another skip is available
+//---
+
 //Struct to declare players:
 struct Player{
   int playerNum;
@@ -22,16 +27,17 @@ char hexaKeys[rowNum][colNum]={
 //Pin-out for keypad entry:
 byte rowPins[rowNum]={22, 24, 26, 28};
 byte colPins[colNum]={30, 32, 34, 36};
+
 Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, rowNum, colNum); 
 
 //This is an integer-based map of the board. If a checker belongs to Player #1, a '1' occupies the space. For Player #2, a "2" occupies...
 //...the space. If there is no checker in the space, a '0' is at the coordinate.
 int checkerBoard[8][8];
 
-//Checker that is selected to be moved:
+//Selected checker:
 int selectedChecker[2] = {NULL, NULL};
 
-//Coordinates temporarily storing the position of the checker to be moved, if a jump has just occurred:
+//TEST:
 int tempSelectedChecker[2]={NULL, NULL};
 
 //Variables to store each player's score:
@@ -41,11 +47,7 @@ int playerTwoScore=0;
 //Flag that determines if the player just jumped, meaning that there is a possibility to double-jump:
 bool inJump=false;
 
-//Reset button pins for each player:
-int playerOneReset=2;
-int playerTwoReset=3;
-
-//Function that prints the configuration of the board after each move:
+//Function for testing that prints the configuration of the board after each move:
 void testBoardConfig(){
   Serial.print("\nBoard Configuration:");
   for(int i=0; i<8; i++){
@@ -55,7 +57,7 @@ void testBoardConfig(){
     }
   }
 
-  //Display each player's score:
+  //TEST:
   Serial.print("\nPlayer #1 Score: ");
   Serial.print(playerOneScore);
   Serial.print("\nPlayer #2 Score: ");
@@ -66,15 +68,6 @@ void testBoardConfig(){
 char pollForSelection(){
   char customKey=customKeypad.getKey();
   while(customKey==NULL){
-    //Add reset buttons for each player that they may press at any point when the game prompts input. Later, functionality...
-    //...will be added that calls the end-of-game function:
-    if(digitalRead(2)==HIGH){
-      Serial.print("Player #1 Forfeits");
-    }
-    else if(digitalRead(3)==HIGH){
-      Serial.print("Player #1 Forfeits");
-    }
-    
     customKey=customKeypad.getKey();
   }
 }
@@ -109,13 +102,11 @@ void selectChecker(int prevCoordOne=-1, int prevCoordTwo=-1){
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
     
-    //The following helps to determine the selected checker if the current checker is within a jump. If...
-    //...it did just complete a jump, and this is the first iteration of the loop, see if that checker can be selected again:
+    //TEST:
     if(inJump==true && numIt==0){
       coordOne=prevCoordOne;
       coordTwo=prevCoordTwo;
     }
-    //If not, change the player in-turn, and poll for new coordinates:
     else if(inJump==true && numIt==1){
       if(playerInTurn.playerNum==1){
         playerInTurn.playerNum=2;
@@ -127,12 +118,11 @@ void selectChecker(int prevCoordOne=-1, int prevCoordTwo=-1){
       coordOne=pollForSelection()-'0';
       coordTwo=pollForSelection()-'0';
     }
-    //On every other iteration, poll for coordinates, but do not change the player in-turn:
     else{
       coordOne=pollForSelection()-'0';
       coordTwo=pollForSelection()-'0';
     }
-    //Increment the counter:
+    //Iterate:
     numIt++;
 
     //Coordinate exceeds board limits:
@@ -165,7 +155,7 @@ void selectChecker(int prevCoordOne=-1, int prevCoordTwo=-1){
   selectedChecker[0]=coordOne;
   selectedChecker[1]=coordTwo;
 
-  //Print the selected checker serially:
+  //TEST:
   Serial.print("\nThe selected checker is:\n");
   Serial.print(coordOne);
   Serial.print(coordTwo);
@@ -176,7 +166,7 @@ int checkIfMovePlayerOne(int coordOne, int coordTwo){
   //Find if the move to be made would exceed board limits:
   int coordOneMin, coordOnePlus, coordTwoMin, coordTwoPlus;
 
-  //"coordOne" cannot be decremented, because the piece may not move backwards:
+  //Coordinate #1 cannot be decremented, because the piece may not move backwards:
   coordOnePlus=coordOne+1;
   coordTwoMin=coordTwo-1;
   coordTwoPlus=coordTwo+1;
@@ -196,17 +186,18 @@ int checkIfMovePlayerOne(int coordOne, int coordTwo){
     //Now, see if there is a move available to skip over the opposing player's checker:
     int tempFlag=0;
 
-    //The first condition tests if a move to the left is available, either simply moving or jumping a player's checker:
+    //Move #1: Skipping over the opposing player's checker with a piece not on an edge:
+    //In order, the conditions are as follows:
     if(coordOnePlusTwo>7 || coordTwoMinTwo<0 || (checkerBoard[coordOnePlusTwo][coordTwoMinTwo]==0 && checkerBoard[coordOnePlus][coordTwoMin]!=2 && checkerBoard[coordOnePlus][coordTwoMin]!=4)  || checkerBoard[coordOnePlusTwo][coordTwoMinTwo]!=0){
       tempFlag++;
     }
 
-    ///The second condition tests if a move to the right is available, either simply moving or jumping a player's checker:
+    //Check to see if the move to the right would be valid:
     if(coordOnePlusTwo>7 || coordTwoPlusTwo>7 || (checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]==0 && checkerBoard[coordOnePlus][coordTwoPlus]!=2 && checkerBoard[coordOnePlus][coordTwoPlus]!=4) || checkerBoard[coordOnePlusTwo][coordTwoPlusTwo]!=0){
       tempFlag++;
     }
 
-    //The third condition tests to see if a move forward without skipping over the opponent's checker is available:
+    //Check to see if a move forward without skipping over the opponent's checker is available:
     if(inJump==false && checkerBoard[coordOnePlus][coordTwoMin]!=0 && checkerBoard[coordOnePlus][coordTwoPlus]!=0){
       tempFlag+=3;
     }
@@ -237,7 +228,7 @@ int checkIfMovePlayerTwo(int coordOne, int coordTwo){
   //Find if the move to be made would exceed board limits:
   int coordOneMin, coordOnePlus, coordTwoMin, coordTwoPlus;
 
-  //"coordOne" cannot be incremented, because the piece may not move backwards:
+  //Coordinate #1 cannot be incremented, because the piece may not move backwards:
   coordOneMin=coordOne-1;
   coordTwoMin=coordTwo-1;
   coordTwoPlus=coordTwo+1;
@@ -319,7 +310,6 @@ int moveConditionsPlayerOne(int* neededPlayer, int coordOne, int coordTwo){
     if(coordTwo==selectedChecker[1]-2 && (checkerBoard[coordOne-1][coordTwo+1]==neededPlayer[0] || checkerBoard[coordOne-1][coordTwo+1]==neededPlayer[1])){
       //If valid, remove that chip from the board, and increment the current player's score:
       checkerBoard[coordOne-1][coordTwo+1]=0;
-
       //Increment the score, since a checker was removed:
       scoreFlag=1;
       retFlag=1;
@@ -331,7 +321,6 @@ int moveConditionsPlayerOne(int* neededPlayer, int coordOne, int coordTwo){
     }
     else if(coordTwo==selectedChecker[1]+2 && (checkerBoard[coordOne-1][coordTwo-1]==neededPlayer[0] || checkerBoard[coordOne-1][coordTwo-1]==neededPlayer[1])){
       checkerBoard[coordOne-1][coordTwo-1]=0;
-
       //Increment the score, since a checker was removed:
       scoreFlag=1;
       retFlag=1;
@@ -370,7 +359,6 @@ int moveConditionsPlayerTwo(int* neededPlayer, int coordOne, int coordTwo){
     if(coordTwo==selectedChecker[1]-2 && (checkerBoard[coordOne+1][coordTwo+1]==neededPlayer[0] || checkerBoard[coordOne+1][coordTwo+1]==neededPlayer[1])){
       //If valid, remove that chip from the board, and increment the current player's score:
       checkerBoard[coordOne+1][coordTwo+1]=0;
-
       //Increment the score, since a checker was removed:
       scoreFlag=1;
       retFlag=1;
@@ -382,7 +370,6 @@ int moveConditionsPlayerTwo(int* neededPlayer, int coordOne, int coordTwo){
     }
     else if(coordTwo==selectedChecker[1]+2 && (checkerBoard[coordOne+1][coordTwo-1]==neededPlayer[0] || checkerBoard[coordOne+1][coordTwo-1]==neededPlayer[1])){
       checkerBoard[coordOne+1][coordTwo-1]=0;
-
       //Increment the score, since a checker was removed:
       scoreFlag=1;
       retFlag=1;
@@ -394,7 +381,6 @@ int moveConditionsPlayerTwo(int* neededPlayer, int coordOne, int coordTwo){
     }
   }
   
-  //If the flag indicating a change in score is positive, increment the correct player's score:
   if(scoreFlag==1){
     incrementScore();
   }
@@ -484,7 +470,7 @@ void moveChecker(){
   //Check to see if there is a winner:
   checkForWinner();
 
-  //Print the board configuration:
+  //TEST:
   testBoardConfig();
 }
 
@@ -519,12 +505,8 @@ void checkForWinner(){
 
 //Set-up the initial board, with each player's pieces:
 void setup(){
-  //Begin serial communication:
+  //TEST:
   Serial.begin(9600);
-
-  //Initialize the reset button pins:
-  pinMode(2, INPUT);
-  pinMode(3, INPUT);
 
   //The first player in-turn is Player #1:
   playerInTurn.playerNum=1;
@@ -549,8 +531,7 @@ void setup(){
       }
     }
   }
-  
-  //Print the board configuration:
+  //TEST:
   testBoardConfig();
 }
 
