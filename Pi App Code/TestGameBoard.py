@@ -223,6 +223,9 @@ class TestGameBoard(unittest.TestCase):
 
         result1 = self.gb.validateMove(move1)
         self.assertEqual(result1, (True, MoveSuccess.GAME_OVER))
+        self.assertEqual(self.gb.blackPieces, 12)
+        self.assertEqual(self.gb.redPieces, 12)
+        self.assertEqual(self.gb.currentPlayer, Player.BLACK)
 
 if __name__ == '__main__':
     unittest.main()
