@@ -212,5 +212,17 @@ class TestGameBoard(unittest.TestCase):
         self.assertEqual(result7, (True, MoveSuccess.CAPTURE_PIECE))
         self.assertEqual(self.gb.currentPlayer, Player.BLACK)
 
+    def testWinCondition(self):
+        self.gb.tiles = [[None] * 8 for _ in range(8)]
+        self.gb.tiles[3][3] = GamePiece(Player.BLACK, [3, 3])
+        self.gb.tiles[4][4] = GamePiece(Player.RED, [4, 4])
+        move1 = Move([3, 3], [5, 5])
+
+        self.gb.blackPieces = 1 # hard code 1 piece each and placements
+        self.gb.redPieces = 1
+
+        result1 = self.gb.validateMove(move1)
+        self.assertEqual(result1, (True, MoveSuccess.GAME_OVER))
+
 if __name__ == '__main__':
     unittest.main()
