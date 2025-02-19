@@ -6,7 +6,7 @@ class GameBoard():
         # Bluetooth object to Arduino
         self.bluetoothObjectA = self.connectArduino()
         # Overide object for testing
-        self.overideBTA = True
+        #self.overideBTA = True
         # Fill the tiles
         self.tiles = [[None] * 8 for _ in range(8)]
         # black pieces always move first
