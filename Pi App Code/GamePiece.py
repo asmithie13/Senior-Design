@@ -1,21 +1,21 @@
 from enum import Enum
 
-class gamePiece():
+class GamePiece():
     def __init__(self, player, location):
         self.player = player
         self.location = location
         self.isKing = False
 
-class move():
+class Move():
     def __init__(self, start, end):
         self.start = start
         self.end = end
 
-class player(Enum):
+class Player(Enum):
     BLACK = 1
     RED = 2
 
-class moveError(str, Enum):
+class MoveError(str, Enum):
     START_OUT_OF_BOUNDS = "Invalid move: Start position out of bounds."
     END_OUT_OF_BOUNDS = "Invalid move: End position out of bounds."
     START_TILE_EMPTY = "Invalid move: Start tile is empty."
@@ -27,7 +27,9 @@ class moveError(str, Enum):
     INVALID_DISTANCE = "Invalid move: Distance moved not 1 or 2 across."
     NO_PIECE_TO_CAPTURE = "Invalid move: No piece is being taken with this 2 distance move."
     FRIENDLY_FIRE = "Invalid move: Cannot overtake one's own piece."
+    MUST_DOUBLE_JUMP = "Invalid move: A double jump must be performed"
 
-class moveSuccess(str, Enum):
+class MoveSuccess(str, Enum):
     NORMAL_MOVE = "Normal move is made"
     CAPTURE_PIECE = "Piece is overtaken"
+    DOUBLE_JUMP = "Piece is overtaken. Must double jump."
