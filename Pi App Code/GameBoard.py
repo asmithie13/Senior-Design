@@ -152,6 +152,9 @@ class GameBoard():
                 return False, MoveError.FRIENDLY_FIRE
             else:
                 self.overtakeMove(move, midPoint)
+                if self.redPieces == 0 or self.blackPieces == 0:
+                    self.handleReset()
+                    return True, MoveSuccess.GAME_OVER
                 self.canDoubleJump(move)
                 self.sendMoveToArduino(move)
                 if self.canDoubleJumpFlag:
