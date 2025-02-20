@@ -4,7 +4,7 @@ from GamePiece import *
 class GameBoard():
     def __init__(self):
         # Bluetooth object to Arduino
-        self.bluetoothObjectA = self.connectArduino()
+        self.serialObject = self.connectArduino()
         # Overide object for testing
         #self.overideBTA = True
         # Fill the tiles
@@ -56,10 +56,10 @@ class GameBoard():
     
     def connectArduino(self):
         try:
-            bluetoothObject=serial.Serial("/dev/rfcomm0", 9600, timeout=10)
+            serialObject=serial.Serial("/dev/ttyACM0", 9600, timeout=10)
             time.sleep(2)
             print("Connection to Arduino successful.")
-            return bluetoothObject
+            return serialObject
         except serial.SerialException as e:
             print(f"Failed to connect to Arduino: {e}")
             return None
@@ -70,7 +70,7 @@ class GameBoard():
     def sendMoveToArduino(self, move):
         try:
             tempData = str(move.start[0]) + str(move.start[1]) + str(move.end[0]) + str(move.end[1])
-            self.bluetoothObjectA.write(tempData.encode())
+            self.serialObject.write(tempData.encode())
             return True
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
@@ -79,7 +79,7 @@ class GameBoard():
     def sendResetToArduino(self):
         try:
             tempData = "*"
-            self.bluetoothObjectA.write(tempData.encode())
+            self.serialObject.write(tempData.encode())
             return True
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
