@@ -16,6 +16,15 @@ def fillVisual(gb, visArr):
 def processMove(gb, visArr):
     s = input("Enter move coordinates in #### form: ")
     nums = np.array([["0", "1", "2", "3", "4", "5", "6", "7"]])
+
+    if s == "*":
+        gb.handleReset()
+        fillVisual(gb, visArr)
+        print(nums)
+        print(np.hstack((visArr, nums.T)))
+        print("Current Player: " + str(gb.currentPlayer))
+        return
+
     move = Move([int(s[0]), int(s[1])], [int(s[2]), int(s[3])])
     result = gb.validateMove(move)
 

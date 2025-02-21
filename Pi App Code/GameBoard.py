@@ -1,6 +1,12 @@
+import serial
+import time
 from GamePiece import *
 class GameBoard():
     def __init__(self):
+        # Bluetooth object to Arduino
+        self.serialObject = self.connectArduino()
+        # Overide object for testing
+        #self.overideBTA = True
         # Fill the tiles
         self.tiles = [[None] * 8 for _ in range(8)]
         # black pieces always move first
@@ -47,8 +53,41 @@ class GameBoard():
         
         for piece in gamePieces:
             self.tiles[piece.location[0]][piece.location[1]] = piece
+    
+    def connectArduino(self):
+        try:
+            serialObject=serial.Serial("/dev/ttyACM0", 9600, timeout=10)
+            time.sleep(2)
+            print("Connection to Arduino successful.")
+            return serialObject
+        except serial.SerialException as e:
+            print(f"Failed to connect to Arduino: {e}")
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return None
+        
+    def sendMoveToArduino(self, move):
+        try:
+            tempData = str(move.start[0]) + str(move.start[1]) + str(move.end[0]) + str(move.end[1])
+            self.serialObject.write(tempData.encode())
+            return True
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return False
+        
+    def sendResetToArduino(self):
+        try:
+            tempData = "*"
+            self.serialObject.write(tempData.encode())
+            return True
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return False
+        
 
     def handleReset(self):
+        self.sendResetToArduino()
         self.__init__()
 
     def validateMove(self, move):
@@ -101,6 +140,7 @@ class GameBoard():
         if xDistance == 1:
             self.regularMove(move)
             self.switchPlayers()
+            self.sendMoveToArduino(move)
             return True, MoveSuccess.NORMAL_MOVE
         else:
             # One jump case
@@ -116,6 +156,7 @@ class GameBoard():
                     self.handleReset()
                     return True, MoveSuccess.GAME_OVER
                 self.canDoubleJump(move)
+                self.sendMoveToArduino(move)
                 if self.canDoubleJumpFlag:
                     return True, MoveSuccess.DOUBLE_JUMP
                 self.switchPlayers()
