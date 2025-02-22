@@ -33,3 +33,4 @@ class MoveSuccess(str, Enum):
     NORMAL_MOVE = "Normal move is made"
     CAPTURE_PIECE = "Piece is overtaken"
     DOUBLE_JUMP = "Piece is overtaken. Must double jump."
+    GAME_OVER = "A player has no more pieces to play."
