@@ -6,6 +6,9 @@ void setup() {
   Serial.begin(9600);
   Serial1.begin(9600); //Baud rate for HC-05 (Connect to appropriate MEGA pins)
 
+  //TEST:
+  Serial.print("BEGIN");
+
   //Initialize output pin:
   pinMode(50, INPUT);
 }
@@ -24,3 +27,4 @@ void loop() {
     digitalWrite(50, LOW);
   } 
 }
+
