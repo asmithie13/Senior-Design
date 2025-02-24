@@ -756,6 +756,9 @@ void setup() {
   //Initialize serial communication with the Raspberry Pi:
   Serial1.begin(9600);
 
+  //Initialize serial communication with the DFPlayer:
+  Serial2.begin(9600);
+
   //Initialize LCD display:
   lcd1.init();
   lcd1.backlight();
@@ -815,6 +818,31 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Voice-Controlled");
+    delay(1500);
+
+    //Print pre-game messages:
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.setCursor(0, 0);
+    lcd2.setCursor(0, 0);
+    lcd1.print("3");
+    lcd2.print("3");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("2");
+    lcd2.print("2");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("1");
+    lcd2.print("1");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("Begin!");
+    lcd2.print("Begin!");
+    delay(1000);
 
     //Enter the voice-controlled game:
     voiceControlledGame();
@@ -827,6 +855,31 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Manual");
+    delay(1500);
+
+    //Print pre-game messages:
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.setCursor(0, 0);
+    lcd2.setCursor(0, 0);
+    lcd1.print("3");
+    lcd2.print("3");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("2");
+    lcd2.print("2");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("1");
+    lcd2.print("1");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("Begin!");
+    lcd2.print("Begin!");
+    delay(1000);
 
     //Enter the manual game:
     manualGame();
