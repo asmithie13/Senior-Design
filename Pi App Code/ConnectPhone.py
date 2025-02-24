@@ -1,43 +1,28 @@
-import bluetooth
+from flask import Flask, request, jsonify
 
-def runBluetoothServer():
-    # Create a Bluetooth server socket using RFCOMM protocol
-    serverSocket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-    serverSocket.bind(("", bluetooth.PORT_ANY))
-    serverSocket.listen(1)
+app = Flask(__name__)
 
-    # Get the port the server socket is listening on
-    port = serverSocket.getsockname()[1]
-    print(f"Waiting for connection on RFCOMM channel {port}...")
+# Example route to handle GET request
+@app.route('/get_data', methods=['GET'])
+def get_data():
+    response = {
+        'message': 'Hello from Raspberry Pi!',
+        'status': 'success'
+    }
+    return jsonify(response)
 
-    bluetooth.advertise_service(
-        serverSocket,
-        "PythonBluetooth",
-        service_classes=[bluetooth.SERIAL_PORT_CLASS],
-        profiles=[bluetooth.SERIAL_PORT_PROFILE]
-    )
+# Example route to handle POST request
+@app.route('/send_data', methods=['POST'])
+def send_data():
+    data = request.json  # Get JSON data from iOS app
+    print(f"Received data: {data}")
 
-    clientSocket, clientInfo = serverSocket.accept()
-    print(f"Accepted connection from {clientInfo}")
-
-    try:
-        while True:
-            data = clientSocket.recv(1024)
-            if not data:
-                break
-
-            message = data.decode('utf-8')
-            print(f"Received from Swift: {message}")
-            response = f"Echo: {message}"
-            clientSocket.send(response.encode('utf-8'))
-            print(f"Sent to Swift: {response}")
-
-    except OSError as e:
-        print(f"Socket error: {e}")
-    finally:
-        print("Closing connection...")
-        clientSocket.close()
-        serverSocket.close()
+    # Process the data or store it as needed
+    response = {
+        'message': 'Data received successfully!',
+        'status': 'success'
+    }
+    return jsonify(response)
 
 if __name__ == '__main__':
-    runBluetoothServer()
+    app.run(host='0.0.0.0', port=5000)
