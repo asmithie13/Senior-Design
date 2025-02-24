@@ -10,14 +10,18 @@ def runBluetoothServer():
     port = serverSocket.getsockname()[1]
     print(f"Waiting for connection on RFCOMM channel {port}...")
 
-    bluetooth.advertise_service(
-        serverSocket,
-        "PythonBluetooth",
-        service_classes=[bluetooth.SERIAL_PORT_CLASS],
-        profiles=[bluetooth.SERIAL_PORT_PROFILE]
-    )
+    try:
+        bluetooth.advertise_service(
+            serverSocket,
+            "PythonBluetooth",
+            service_classes=[bluetooth.SERIAL_PORT_CLASS],
+            profiles=[bluetooth.SERIAL_PORT_PROFILE]
+        )
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return
 
-    clientSocket, clientInfo = serverSocket.accept()
+    clientSocket, clientInfo = serverSocket.accept()    # CURRENTLY GETS STUCK HERE
     print(f"Accepted connection from {clientInfo}")
 
     try:
