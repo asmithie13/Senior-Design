@@ -63,53 +63,79 @@ int colVal[8][2]=
   {40, 41},
   {42, 43},
   {44, 45},
-  {46, 47},
-  {48, 49},
-  {50, 51},
-  {52, 53}
 };
 
-//Function to initialize each LED pin as an output:
+//Function to initialize each LED pin as an output, and set all to LOW:
 void setLEDPins(){
   //First, initialize all row LEDs:
   for(int i=0; i<8; i++){
     pinMode(rowVal[i], OUTPUT);
+    digitalWrite(rowVal[i], LOW);
   }
 
   //Then, intialize all columns:
-  for(int i=0; i<8; i++){
+  for(int i=0; i<4; i++){
     for(int j=0; j<2; j++){
       pinMode(colVal[i][j], OUTPUT);
+      digitalWrite(colVal[i][j], LOW);
     }
   }
 }
 
 //Function to update LED board based on checker positions:
 void updateBoardLEDs(){
+  //TEST:
+  digitalWrite(2, HIGH);
+  digitalWrite(3, HIGH);
+  digitalWrite(4, HIGH);
+  digitalWrite(5, HIGH);
+  digitalWrite(6, HIGH);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, HIGH);
+  digitalWrite(9, HIGH);
+
+  digitalWrite(39, HIGH);
+  digitalWrite(41, HIGH);
+  digitalWrite(43, HIGH);
+  digitalWrite(45, HIGH);
+
   //Iterate through all spaces on the board map:
-  for(int i=0; i<8; i++){
+  /*for(int i=0; i<8; i++){
     for(int j=0; j<8; j++){
       //If there is no checker in the space, ensure that the rows and columns corresponding...
       //...to that piece are disabled:
+
+      //Value to calculate the correct row:
+      int roundRow=j/2;
       if(checkerBoard[i][j]==0){
         digitalWrite(rowVal[i], LOW);
-        digitalWrite(colVal[i][0], HIGH);
-        digitalWrite(colVal[i][1], HIGH);
+        digitalWrite(colVal[i][0], LOW);
+        digitalWrite(colVal[i][1], LOW);
       }
       //Set Player #1's LEDs:
       else if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
+        Serial.print("P1:\n");
+        Serial.print(rowVal[i]);
+        Serial.print(colVal[roundRow][0]);
+        Serial.print("\n");
+        
         digitalWrite(rowVal[i], HIGH);
-        digitalWrite(colVal[i][0], HIGH);
-        digitalWrite(colVal[i][1], LOW);
+        digitalWrite(colVal[roundRow][0], HIGH);
+        digitalWrite(colVal[roundRow][1], LOW);
       }
       //Set Player #2's LEDs:
       else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
+        Serial.print("P2:\n");
+        Serial.print(rowVal[i]);
+        Serial.print(colVal[roundRow][1]);
+        Serial.print("\n");
+
         digitalWrite(rowVal[i], HIGH);
-        digitalWrite(colVal[i][0], LOW);
-        digitalWrite(colVal[i][1], HIGH);
+        digitalWrite(colVal[roundRow][0], LOW);
+        digitalWrite(colVal[roundRow][1], HIGH);
       }
     }
-  }
+  }*/
 }
 
 //Wait for user keypad input:
