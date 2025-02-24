@@ -53,6 +53,65 @@ int playerTwoScore=0;
 //Flag to determine if the reset signal was received when playing in manual mode:
 bool resetSig;
 
+//Initialize arrays for sending signals to LED checkerboard:
+//For rows, row #0 should correspond to pin #2 on the Arduino, row #1= pin #3, etc.:
+int rowVal[8]={2, 3, 4, 5, 6, 7, 8, 9};
+//For columns, column #0=pins 38 and 39, depending on the desired color, etc.:
+int colVal[8][2]=
+{
+  {38, 39},
+  {40, 41},
+  {42, 43},
+  {44, 45},
+  {46, 47},
+  {48, 49},
+  {50, 51},
+  {52, 53}
+};
+
+//Function to initialize each LED pin as an output:
+void setLEDPins(){
+  //First, initialize all row LEDs:
+  for(int i=0; i<8; i++){
+    pinMode(rowVal[i], OUTPUT);
+  }
+
+  //Then, intialize all columns:
+  for(int i=0; i<8; i++){
+    for(int j=0; j<2; j++){
+      pinMode(colVal[i][j], OUTPUT);
+    }
+  }
+}
+
+//Function to update LED board based on checker positions:
+void updateBoardLEDs(){
+  //Iterate through all spaces on the board map:
+  for(int i=0; i<8; i++){
+    for(int j=0; j<8; j++){
+      //If there is no checker in the space, ensure that the rows and columns corresponding...
+      //...to that piece are disabled:
+      if(checkerBoard[i][j]==0){
+        digitalWrite(rowVal[i], LOW);
+        digitalWrite(colVal[i][0], HIGH);
+        digitalWrite(colVal[i][1], HIGH);
+      }
+      //Set Player #1's LEDs:
+      else if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
+        digitalWrite(rowVal[i], HIGH);
+        digitalWrite(colVal[i][0], HIGH);
+        digitalWrite(colVal[i][1], LOW);
+      }
+      //Set Player #2's LEDs:
+      else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
+        digitalWrite(rowVal[i], HIGH);
+        digitalWrite(colVal[i][0], LOW);
+        digitalWrite(colVal[i][1], HIGH);
+      }
+    }
+  }
+}
+
 //Wait for user keypad input:
 char pollForSelection(){
   char customKey=customKeypad.getKey();
@@ -745,6 +804,32 @@ void manualGame(){
     if(isWinner==true){
       break;
     }
+
+    //If there isn't a winner, update the LED board accordingly:
+    updateBoardLEDs();
+  }
+}
+
+//Stub game to test win sequences:
+void stubManualMode(){
+  while(1){
+    //Set the game board so that Player #1 has no pieces left:
+    //Initialize the checkers with all pieces in the correct position:
+    for(int i=0; i<8; i++){
+      for(int j=0; j<8; j++){
+        checkerBoard[i][j]=1;
+      }
+    }
+
+    //Set the player score, to expect a desired winner:
+    playerTwoScore=1;
+
+    //Check for the win sequence, and expect it to be activated:
+    int isWinner=NULL;
+    isWinner=checkForWinner();
+    if(isWinner==true){
+      break;
+    }
   }
 }
 
@@ -766,12 +851,18 @@ void setup() {
   //Initialize the second display:
   lcd2.init();
   lcd2.backlight();
+
+  //Initialize all used LED pins as output:
+  setLEDPins();
 }
 
 //Begin the game:
 void loop() {
   //Initialize the board (same for both game modes):
   initializeBoard();
+
+  //Initialize the LED matrix:
+  updateBoardLEDs();
 
   //TEST:
   testBoardConfig();
@@ -883,6 +974,9 @@ void loop() {
 
     //Enter the manual game:
     manualGame();
+
+    //TEST:
+    //stubManualMode();
   }
 
   //After either game is over, play the win-sequence:
