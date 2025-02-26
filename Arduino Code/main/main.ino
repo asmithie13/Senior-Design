@@ -195,34 +195,36 @@ void winSequence(){
 }
 
 //Receive coordinates, or reset signal, from the Raspberry Pi:
-int* getPiCoordinates() {
-  //Initialize an array to hold the selected checker and move coordinates:
-  int coordArray[4];
-
-  //Declare variable to count how many characters have been received:
-  int countVar=0;
-
-  //Check if serial data is received:
-  while(countVar<4){
+int* getPiCoordinates(int* coordArray) {
+  //Wait for Serial data from the Raspberry Pi:
+  while(1){
+    //If serial data has been received:
     if(Serial1.available()){
-      char data=Serial1.read(); //Read data, and convert it to an integer:
+      //Read data, and convert each character in the string to an integer:
+      String data=Serial1.readStringUntil('\n');
 
-      //If the reset signal is received, break from the loop:
-      if(data=='*'){
-        lcd1.clear();
-        lcd1.print("Reset received.");
-        delay(500);
-        return;
+      //Iterate through the string:
+      for(int i=0; i<5; i++){
+        //If the reset signal is received, break from the loop:
+        if(coordArray[i]=='*'){
+          resetSig=true;
+          lcd1.clear();
+          lcd2.clear();
+          lcd1.print("Reset received.");
+          lcd2.print("Reset received.");
+          delay(2000);
+          return;
+        }
+        //Otherwise, append the integer to the data array:
+        else{
+          coordArray[i]=data[i]-'0';
+        }
       }
 
-      //Otherwise, append the data to the return array, and increment the counter:
-      coordArray[countVar]=data-'0';
-      countVar++;
+      //If serial data was received successfully, break from the loop:
+      break;
     }
   }
-
-  //Return the coordinate array:
-  return coordArray; 
 }
 
 //Function to execute the voice-controlled game mode:
@@ -248,15 +250,14 @@ void voiceControlledGame(){
       lcd1.print("Waiting...");
     }
     //Get coordinates from the Raspberry Pi:
-    int* coordArray=getPiCoordinates();
+    int coordArray[4];
+    getPiCoordinates(coordArray);
 
-    //Iterate through the received coordinates to ensure that the reset signal was not received:
-    for(int i=0; i<4; i++){
-      if(coordArray[i]=='*'){
-        break;
-      }
+    //Check for the reset signal:
+    if(resetSig==true){
+      break;
     }
-    
+   
     //Assign values based on coordinates received:
     selectedChecker[0]=coordArray[0];
     selectedChecker[1]=coordArray[1];
@@ -289,16 +290,17 @@ void voiceControlledGame(){
       lcd1.print(selectedChecker[1]);
       lcd1.print(")");
       lcd1.setCursor(0, 1);
-      lcd1.print("Moved to:");
       lcd1.print("Moved to: (");
       lcd1.print(moveSpace[0]);
       lcd1.print(", ");
       lcd1.print(moveSpace[1]);
       lcd1.print(")");
-      delay(1000);
+      delay(5000);
 
-      //Alternate player:
-      playerInTurn.playerNum=2;
+      //Alternate player, if no double-jump exists:
+      if(coordArray[4]==0){
+        playerInTurn.playerNum=2;
+      }
     }
     else{
       //Set the move space:
@@ -313,20 +315,24 @@ void voiceControlledGame(){
       lcd2.print(selectedChecker[1]);
       lcd2.print(")");
       lcd2.setCursor(0, 1);
-      lcd2.print("Moved to:");
       lcd2.print("Moved to: (");
       lcd2.print(moveSpace[0]);
       lcd2.print(", ");
       lcd2.print(moveSpace[1]);
       lcd2.print(")");
-      delay(1000);
+      delay(5000);
 
-      //Alternate player:
-      playerInTurn.playerNum=1;
+      //Alternate player, if no double-jump exists:
+      if(coordArray[4]==0){
+        playerInTurn.playerNum=1;
+      }
     }
 
     //Check to see if a king-space must be awarded:
     checkForKing();
+
+    //Show the board configuration:
+    testBoardConfig();
   }
 }
 
