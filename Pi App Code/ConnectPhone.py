@@ -1,37 +1,28 @@
-from pydbus import SystemBus
-from gi.repository import GLib
-from dbus.mainloop.glib import DBusGMainLoop
+from flask import Flask, request, jsonify
 
-SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
-CHARACTERISTIC_UUID = "12345678-1234-5678-1234-56789abcdef1"
+app = Flask(__name__)
 
-class BLECharacteristic:
-    def __init__(self, uuid, value=b"Hello from Python BLE"):
-        self.uuid = uuid
-        self.value = value
+# Example route to handle GET request
+@app.route('/get_data', methods=['GET'])
+def get_data():
+    response = {
+        'message': 'Hello from Raspberry Pi!',
+        'status': 'success'
+    }
+    return jsonify(response)
 
-    def ReadValue(self, options):
-        print("Client read request")
-        return list(self.value)
+# Example route to handle POST request
+@app.route('/send_data', methods=['POST'])
+def send_data():
+    data = request.json  # Get JSON data from iOS app
+    print(f"Received data: {data}")
 
-    def WriteValue(self, value, options):
-        self.value = bytes(value)
-        print(f"Received from client: {self.value.decode('utf-8')}")
+    # Process the data or store it as needed
+    response = {
+        'message': 'Data received successfully!',
+        'status': 'success'
+    }
+    return jsonify(response)
 
-class BLEService:
-    def __init__(self):
-        self.characteristic = BLECharacteristic(CHARACTERISTIC_UUID)
-
-    def register(self):
-        bus = SystemBus()
-        adapter = bus.get("org.bluez", "/org/bluez/hci0")
-        adapter.RegisterApplication("/", {})
-
-        print("BLE GATT Server started...")
-
-if __name__ == "__main__":
-    DBusGMainLoop(set_as_default=True)
-    server = BLEService()
-    server.register()
-    loop = GLib.MainLoop()
-    loop.run()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
