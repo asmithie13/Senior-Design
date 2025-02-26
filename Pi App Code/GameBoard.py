@@ -56,7 +56,7 @@ class GameBoard():
     
     def connectArduino(self):
         try:
-            serialObject=serial.Serial("/dev/ttyACM0", 9600, timeout=10)
+            serialObject=serial.Serial("/dev/ttyUSB0", 9600, timeout=10)
             time.sleep(2)
             print("Connection to Arduino successful.")
             return serialObject
