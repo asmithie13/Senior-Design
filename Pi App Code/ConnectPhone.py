@@ -1,46 +1,37 @@
-import asyncio
-from bleak import BleakServer, BleakGATTService, BleakGATTCharacteristic
+from pydbus import SystemBus
+from gi.repository import GLib
+from dbus.mainloop.glib import DBusGMainLoop
 
 SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
 CHARACTERISTIC_UUID = "12345678-1234-5678-1234-56789abcdef1"
 
-class MyGattServer:
-    def __init__(self):
-        self.server = None
-        self.value = bytearray(b"Hello from Python BLE")
-
-    async def on_read(self, characteristic):
-        """Handle read requests from the client."""
-        print("Client read request")
-        return self.value
-
-    async def on_write(self, characteristic, value):
-        """Handle write requests from the client."""
+class BLECharacteristic:
+    def __init__(self, uuid, value=b"Hello from Python BLE"):
+        self.uuid = uuid
         self.value = value
-        print(f"Received from client: {value.decode('utf-8')}")
 
-    async def run(self):
-        """Start the BLE GATT server."""
-        self.server = BleakServer()
+    def ReadValue(self, options):
+        print("Client read request")
+        return list(self.value)
 
-        # Create a GATT service with a characteristic
-        service = BleakGATTService(SERVICE_UUID)
-        characteristic = BleakGATTCharacteristic(
-            CHARACTERISTIC_UUID,
-            properties=["read", "write"],
-            read=self.on_read,
-            write=self.on_write,
-        )
+    def WriteValue(self, value, options):
+        self.value = bytes(value)
+        print(f"Received from client: {self.value.decode('utf-8')}")
 
-        service.add_characteristic(characteristic)
-        self.server.add_service(service)
+class BLEService:
+    def __init__(self):
+        self.characteristic = BLECharacteristic(CHARACTERISTIC_UUID)
 
-        print("Starting BLE GATT Server...")
-        await self.server.start()
-        print("BLE Server running...")
+    def register(self):
+        bus = SystemBus()
+        adapter = bus.get("org.bluez", "/org/bluez/hci0")
+        adapter.RegisterApplication("/", {})
 
-        while True:
-            await asyncio.sleep(1)  # Keep server alive
+        print("BLE GATT Server started...")
 
 if __name__ == "__main__":
-    asyncio.run(MyGattServer().run())
+    DBusGMainLoop(set_as_default=True)
+    server = BLEService()
+    server.register()
+    loop = GLib.MainLoop()
+    loop.run()
