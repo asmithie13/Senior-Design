@@ -144,7 +144,7 @@ void initializeBoard(){
   for(int i=0; i<8; i++){
     for(int j=0; j<8; j++){
       int tempRemainder=(i+j)%2;
-      if(tempRemainder==0){
+      if(tempRemainder==1){
         if(i==0 || i==1 || i==2){
           checkerBoard[i][j]=1;
         }
@@ -371,7 +371,7 @@ void selectChecker(){
   int validFlag=1;
 
   //If the input coordinate was invalid, ask again:
-  while(validFlag>0 || (coordOne+coordTwo)%2==1){ //"(coordOne+coordTwo)%2==1" signals that the input coordinate is on an un-used square in the game
+  while(validFlag>0 || (coordOne+coordTwo)%2==0){ //"(coordOne+coordTwo)%2==1" signals that the input coordinate is on an un-used square in the game
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
     coordOne=pollForSelection()-'0';
@@ -638,7 +638,7 @@ void moveChecker(){
   }
 
   //If the input coordinate was invalid, ask again:
-  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==1 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
+  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
     coordOne=pollForSelection()-'0';
