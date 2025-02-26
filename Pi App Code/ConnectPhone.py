@@ -1,47 +1,46 @@
-import bluetooth
+import asyncio
+from bleak import BleakServer, BleakGATTService, BleakGATTCharacteristic
 
-def runBluetoothServer():
-    # Create a Bluetooth server socket using RFCOMM protocol
-    serverSocket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-    serverSocket.bind(("", bluetooth.PORT_ANY))
-    serverSocket.listen(1)
+SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
+CHARACTERISTIC_UUID = "12345678-1234-5678-1234-56789abcdef1"
 
-    # Get the port the server socket is listening on
-    port = serverSocket.getsockname()[1]
-    print(f"Waiting for connection on RFCOMM channel {port}...")
+class MyGattServer:
+    def __init__(self):
+        self.server = None
+        self.value = bytearray(b"Hello from Python BLE")
 
-    try:
-        bluetooth.advertise_service(
-            serverSocket,
-            "PythonBluetooth",
-            service_classes=[bluetooth.SERIAL_PORT_CLASS],
-            profiles=[bluetooth.SERIAL_PORT_PROFILE]
+    async def on_read(self, characteristic):
+        """Handle read requests from the client."""
+        print("Client read request")
+        return self.value
+
+    async def on_write(self, characteristic, value):
+        """Handle write requests from the client."""
+        self.value = value
+        print(f"Received from client: {value.decode('utf-8')}")
+
+    async def run(self):
+        """Start the BLE GATT server."""
+        self.server = BleakServer()
+
+        # Create a GATT service with a characteristic
+        service = BleakGATTService(SERVICE_UUID)
+        characteristic = BleakGATTCharacteristic(
+            CHARACTERISTIC_UUID,
+            properties=["read", "write"],
+            read=self.on_read,
+            write=self.on_write,
         )
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return
 
-    clientSocket, clientInfo = serverSocket.accept()    # CURRENTLY GETS STUCK HERE
-    print(f"Accepted connection from {clientInfo}")
+        service.add_characteristic(characteristic)
+        self.server.add_service(service)
 
-    try:
+        print("Starting BLE GATT Server...")
+        await self.server.start()
+        print("BLE Server running...")
+
         while True:
-            data = clientSocket.recv(1024)
-            if not data:
-                break
+            await asyncio.sleep(1)  # Keep server alive
 
-            message = data.decode('utf-8')
-            print(f"Received from Swift: {message}")
-            response = f"Echo: {message}"
-            clientSocket.send(response.encode('utf-8'))
-            print(f"Sent to Swift: {response}")
-
-    except OSError as e:
-        print(f"Socket error: {e}")
-    finally:
-        print("Closing connection...")
-        clientSocket.close()
-        serverSocket.close()
-
-if __name__ == '__main__':
-    runBluetoothServer()
+if __name__ == "__main__":
+    asyncio.run(MyGattServer().run())
