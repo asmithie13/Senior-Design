@@ -84,20 +84,6 @@ void setLEDPins(){
 
 //Function to update LED board based on checker positions:
 void updateBoardLEDs(){
-  //TEST:
-  digitalWrite(2, HIGH);
-  digitalWrite(3, HIGH);
-  digitalWrite(4, HIGH);
-  digitalWrite(5, HIGH);
-  digitalWrite(6, HIGH);
-  digitalWrite(7, HIGH);
-  digitalWrite(8, HIGH);
-  digitalWrite(9, HIGH);
-
-  digitalWrite(39, HIGH);
-  digitalWrite(41, HIGH);
-  digitalWrite(43, HIGH);
-  digitalWrite(45, HIGH);
 
   //Iterate through all spaces on the board map:
   /*for(int i=0; i<8; i++){
@@ -245,17 +231,25 @@ void voiceControlledGame(){
   int selectedChecker[2];
   int moveSpace[2];
 
-  //Initialize the screens:
-  lcd1.clear();
-  lcd2.clear();
-  lcd1.setCursor(0, 0);
-  lcd2.setCursor(0, 0);
-  lcd1.print("Your turn!");
-  lcd2.print("Waiting...");
-
-  //Get the coordinates serially from the Raspberry Pi:
-  int* coordArray=getPiCoordinates();
   while(1){
+    //Initialize the screens:
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.setCursor(0, 0);
+    lcd2.setCursor(0, 0);
+
+    //Display messages according to the player in-turn:
+    if(playerInTurn.playerNum==1){
+      lcd1.print("Your turn!");
+      lcd2.print("Waiting...");
+    }
+    else{
+      lcd2.print("Your turn!");
+      lcd1.print("Waiting...");
+    }
+    //Get coordinates from the Raspberry Pi:
+    int* coordArray=getPiCoordinates();
+
     //Iterate through the received coordinates to ensure that the reset signal was not received:
     for(int i=0; i<4; i++){
       if(coordArray[i]=='*'){
@@ -288,23 +282,20 @@ void voiceControlledGame(){
 
       //Display move message:
       lcd1.clear();
-      lcd1.print("Selected checker: ");
+      lcd1.setCursor(0, 0);
+      lcd1.print("Selected: (");
+      lcd1.print(selectedChecker[0]);
+      lcd1.print(", ");
+      lcd1.print(selectedChecker[1]);
+      lcd1.print(")");
       lcd1.setCursor(0, 1);
-      char* selectCoord="(";
-      selectCoord+=selectedChecker[0];
-      selectCoord+=',';
-      selectCoord+=selectedChecker[1];
-      selectCoord+=')';
-      lcd1.print(selectCoord);
-      lcd1.setCursor(0, 2);
       lcd1.print("Moved to:");
-      lcd1.setCursor(0, 3);
-      char* moveCoord='(';
-      moveCoord+=moveSpace[0];
-      moveCoord+=',';
-      moveCoord+=moveSpace[1];
-      moveCoord+=')';
-      lcd1.print(moveCoord);
+      lcd1.print("Moved to: (");
+      lcd1.print(moveSpace[0]);
+      lcd1.print(", ");
+      lcd1.print(moveSpace[1]);
+      lcd1.print(")");
+      delay(1000);
 
       //Alternate player:
       playerInTurn.playerNum=2;
@@ -315,23 +306,20 @@ void voiceControlledGame(){
 
       //Display move message:
       lcd2.clear();
-      lcd2.print("Selected checker: ");
+      lcd2.setCursor(0, 0);
+      lcd2.print("Selected: (");
+      lcd2.print(selectedChecker[0]);
+      lcd2.print(", ");
+      lcd2.print(selectedChecker[1]);
+      lcd2.print(")");
       lcd2.setCursor(0, 1);
-      char* selectCoord="(";
-      selectCoord+=selectedChecker[0];
-      selectCoord+=',';
-      selectCoord+=selectedChecker[1];
-      selectCoord+=')';
-      lcd2.print(selectCoord);
-      lcd2.setCursor(0, 2);
       lcd2.print("Moved to:");
-      lcd2.setCursor(0, 3);
-      char* moveCoord='(';
-      moveCoord+=moveSpace[0];
-      moveCoord+=',';
-      moveCoord+=moveSpace[1];
-      moveCoord+=')';
-      lcd2.print(moveCoord);
+      lcd2.print("Moved to: (");
+      lcd2.print(moveSpace[0]);
+      lcd2.print(", ");
+      lcd2.print(moveSpace[1]);
+      lcd2.print(")");
+      delay(1000);
 
       //Alternate player:
       playerInTurn.playerNum=1;
