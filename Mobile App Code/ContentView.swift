@@ -5,18 +5,26 @@
 //  Created by Dillon Hepler on 2/5/25.
 //
 
+
 import SwiftUI
 import Speech
 
 struct ContentView: View {
-    @State private var gameStarted = false  // Tracks game state
-    @State private var currentPlayer = "Player One"  // whose turn it is
-    @State private var lastMove = ""  // Stores the last spoken move
-    @State private var winner: String? = nil  // Stores the winner
-    @State private var isListening = false  // Indicates if speech recognition is active
-    @State private var piecesClaimedP1 = 0  // Keeps track of pieces claimed by Player One
-    @State private var piecesClaimedP2 = 0  // Keeps track of pieces claimed by Player Two
-    private let speechRecognizer = SpeechRecognizer()  // Handles speech recognition
+    // MARK: - Game States
+    @State private var gameStarted = false
+    @State private var currentPlayer = "Player One"
+    @State private var lastMove = ""
+    @State private var winner: String? = nil
+    @State private var isListening = false
+    
+    // MARK: - Speech/Mic Permissions
+    @State private var speechAuthorizationStatus = SFSpeechRecognizerAuthorizationStatus.notDetermined
+    @State private var micPermissionGranted = false
+    
+    // MARK: - Network Config
+   
+    
+    private let speechRecognizer = SpeechRecognizer()
     
     var body: some View {
         VStack {
@@ -25,7 +33,7 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .padding()
                 
-                Text("Current Turn: \(currentPlayer)")  // Displays current player's turn
+                Text("Current Turn: \(currentPlayer)")
                     .font(.title2)
                     .padding()
                 
@@ -38,85 +46,144 @@ struct ContentView: View {
                     .padding()
                 
                 Button(isListening ? "Listening..." : "Speak Move") {
-                    toggleListening()  // Toggles voice recognition on or off
+                    toggleListening()
                 }
                 .padding()
                 .buttonStyle(.borderedProminent)
+                .disabled(!canUseSpeech)  // Only enable if speech is authorized
                 
                 Button("Send Move") {
-                    sendMove()  // Sends the last move and switches turns
+                    sendMove()
                 }
                 .padding()
                 .buttonStyle(.borderedProminent)
                 
                 Button("Clear") {
-                    clearLastMove()  // Clears the last move input
+                    clearLastMove()
                 }
                 .padding()
                 .buttonStyle(.borderedProminent)
                 
                 Button("Restart Game") {
-                    endGame()  // Ends the game and determines a winner
+                    endGame()
                 }
                 .padding()
                 .buttonStyle(.borderedProminent)
+                
+                Divider().padding()
+                
+                // Example extra buttons for GET/POST test
+                Button("GET Data from Pi") {
+                    getDataFromServer()
+                }
+                .padding()
+                
+                Button("POST Dummy Data") {
+                    let dummyData: [String: Any] = ["status": "testing", "move": "dummy"]
+                    sendDataToServer(data: dummyData)
+                }
+                .padding()
+                
             } else {
                 Text("Welcome to Voice Checkers")
                     .font(.largeTitle)
                     .padding()
                 
                 Button("Start Game") {
-                    gameStarted = true  // Starts the game
-                    currentPlayer = "Player One"
-                    lastMove = ""
-                    winner = nil
+                    startGame()
                 }
                 .padding()
                 .buttonStyle(.borderedProminent)
             }
             
             if let winner = winner {
-                Text("Winner: \(winner)")  // Displays the winner of the game
+                Text("Winner: \(winner)")
                     .font(.title)
                     .foregroundColor(.green)
                     .padding()
             }
         }
-    }
-    
-    // Toggles speech recognition on or off
-    func toggleListening() {
-        if isListening {
-            speechRecognizer.stopListening()  // Stops speech recognition
-            isListening = false
-        } else {
-            restartListening()  // Restarts speech recognition
+        .onAppear {
+            requestPermissions()
         }
     }
     
-    // Starts listening and processes the recognized speech
+    // MARK: - Permission Check
+    private var canUseSpeech: Bool {
+        return (speechAuthorizationStatus == .authorized) && micPermissionGranted
+    }
+    
+    // MARK: - Game Logic
+    
+    func startGame() {
+        gameStarted = true
+        currentPlayer = "Player One"
+        lastMove = ""
+        winner = nil
+    }
+    
+    func endGame() {
+        // For now, pick a random winner
+        winner = ["Player One", "Player Two"].randomElement()!
+        gameStarted = false
+    }
+    
+    func clearLastMove() {
+        lastMove = ""
+    }
+    
+    func sendMove() {
+        // Example: "12 to 13" => "1213"
+        let cleanedMove = lastMove.replacingOccurrences(of: " to ", with: "")
+        
+        // Switch turn first or after server response? Your choice.
+        lastMove = ""
+        currentPlayer = (currentPlayer == "Player One") ? "Player Two" : "Player One"
+        
+        // Send the move to the Pi (HTTP POST)
+        let dataToSend: [String: Any] = ["move": cleanedMove]
+        sendDataToServer(data: dataToSend)
+    }
+    
+    // MARK: - Speech Handling
+    
+    func toggleListening() {
+        guard canUseSpeech else { return }
+        
+        if isListening {
+            speechRecognizer.stopListening()
+            isListening = false
+        } else {
+            restartListening()
+        }
+    }
+    
     func restartListening() {
-        speechRecognizer.stopListening()  // Ensures previous session stops before starting a new one
+        guard canUseSpeech else { return }
+        
+        speechRecognizer.stopListening()
         speechRecognizer.startListening { result in
+            // Basic commands
             if result == "CLEAR" {
                 DispatchQueue.main.async {
-                    clearLastMove()  // Clears the last move if "CLEAR" is spoken
+                    clearLastMove()
                 }
             } else if result == "SEND" {
                 DispatchQueue.main.async {
-                    lastMove = ""
-                    currentPlayer = (currentPlayer == "Player One") ? "Player Two" : "Player One"  // Switches player turns
+                    // Actually do a move send if you want
+                    sendMove()
                 }
             } else if result == "RESTART" {
                 DispatchQueue.main.async {
-                    endGame()  // Ends the game if "RESTART" is spoken
+                    endGame()
                 }
             } else {
-                let filteredMove = result.filter { $0.isNumber }.prefix(4)  // Extracts numbers from the spoken move
+                // Parse numeric moves
+                let filteredMove = result.filter { $0.isNumber }.prefix(4)
                 if filteredMove.count == 4 {
                     let formattedMove = "\(filteredMove.prefix(2)) to \(filteredMove.suffix(2))"
                     DispatchQueue.main.async {
-                        lastMove = formattedMove  // Updates the move display
+                        lastMove = formattedMove
                     }
                 }
             }
@@ -124,45 +191,106 @@ struct ContentView: View {
         isListening = true
     }
     
-    // Sends the last move and switches turns
-    func sendMove() {
-        lastMove = ""
-        currentPlayer = (currentPlayer == "Player One") ? "Player Two" : "Player One"
+    // MARK: - Permissions
+    
+    func requestPermissions() {
+        // Ask for Speech Recognition
+        SFSpeechRecognizer.requestAuthorization { status in
+            DispatchQueue.main.async {
+                self.speechAuthorizationStatus = status
+            }
+        }
+        // Ask for Mic
+        AVAudioSession.sharedInstance().requestRecordPermission { granted in
+            DispatchQueue.main.async {
+                self.micPermissionGranted = granted
+            }
+        }
     }
     
-    // Clears the last move
-    func clearLastMove() {
-        lastMove = ""
+    // MARK: - HTTP Networking
+    
+    // Example: GET request
+    func getDataFromServer() {
+        guard let url = URL(string: "http://172.20.10.6:5000/send_data") else {
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("GET request error: \(error.localizedDescription)")
+                return
+            }
+            if let data = data {
+                do {
+                    if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                        print("GET response: \(jsonResponse)")
+                    }
+                } catch {
+                    print("JSON parse error: \(error.localizedDescription)")
+                }
+            }
+        }
+        task.resume()
     }
     
-    // Ends the game 
-    func endGame() {
-        winner = ["Player One", "Player Two"].randomElement()!
-        gameStarted = false
+    // Example: POST request
+    func sendDataToServer(data: [String: Any]) {
+        guard let url = URL(string: "http://172.20.10.6:5000/send_data") else {
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
+            request.httpBody = jsonData
+        } catch {
+            print("Error serializing JSON: \(error.localizedDescription)")
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("POST request error: \(error.localizedDescription)")
+                return
+            }
+            if let data = data {
+                do {
+                    if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                        print("POST response: \(jsonResponse)")
+                    }
+                } catch {
+                    print("Error parsing JSON: \(error.localizedDescription)")
+                }
+            }
+        }
+        task.resume()
     }
 }
 
-// Speech recognition class that listens for commands
+// MARK: - SpeechRecognizer Class
+
 class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     private let recognizer = SFSpeechRecognizer()
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
     
-    // Starts listening for spoken input
     func startListening(completion: @escaping (String) -> Void) {
         guard let recognizer = recognizer, recognizer.isAvailable else { return }
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-        let inputNode = audioEngine.inputNode
         guard let request = recognitionRequest else { return }
         
+        let inputNode = audioEngine.inputNode
         request.shouldReportPartialResults = true
         
         recognitionTask = recognizer.recognitionTask(with: request) { result, error in
             if let result = result {
                 let recognizedText = result.bestTranscription.formattedString.lowercased()
                 
-                // Matches spoken commands to actions
                 if recognizedText.contains("send") {
                     completion("SEND")
                 } else if recognizedText.contains("clear") {
@@ -170,24 +298,28 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
                 } else if recognizedText.contains("restart") {
                     completion("RESTART")
                 } else {
-                    completion(recognizedText)  // Returns recognized text for move processing
+                    completion(recognizedText)
                 }
             }
             if error != nil {
-                self.stopListening()  // Stops listening if an error occurs
+                self.stopListening()
             }
         }
         
         let recordingFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer, when) in
-            request.append(buffer)  // Captures audio input
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+            request.append(buffer)
         }
         
         audioEngine.prepare()
-        try? audioEngine.start()  // Starts the audio engine
+        do {
+            try audioEngine.start()
+        } catch {
+            print("Audio engine couldn't start. Error: \(error.localizedDescription)")
+            stopListening()
+        }
     }
     
-    // Stops listening and clears resources
     func stopListening() {
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
@@ -196,7 +328,8 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     }
 }
 
-// SwiftUI preview
+// MARK: - SwiftUI Preview
+
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
