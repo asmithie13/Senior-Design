@@ -12,16 +12,42 @@ class Backend:
     def _registerRoutes(self):
         @self.app.route('/sendData', methods=['POST'])
         def sendData():
-            data = request.data.decode('utf-8')
-            print(f"Received data: {data}")
+            # Try to decode data
+            try:
+                data = request.data.decode('utf-8')
+                print(f"Received data: {data}")
+            except Exception as e:
+                print(f"{PhoneError.DECODE_ERROR.value}: {e}")
+                response = {
+                'status': False,
+                'message': PhoneError.DECODE_ERROR.value
+                }
+                return jsonify(response)
+        
+            # Reset case
+            if data == "*":
+                self.gb.handleReset()
+                # TODO
+                # DO YOU WANT ME TO TELL YOU I RECEIVED THE RESET??
+                return
             
-            result = self.gb.validateMove(Move([data[0], data[1]], [data[2], data[3]]))
-
-            response = {
+            # Normal move case
+            try:
+                result = self.gb.validateMove(Move([data[0], data[1]], [data[2], data[3]]))
+                response = {
                 'status': result[0],
                 'message': result[1]
-            }
-            return jsonify(response)
+                }
+                return jsonify(response)
+            
+            except Exception as e:
+                print(f"{PhoneError.INVALID_SIGNAL.value}: {e}")
+                response = {
+                'status': False,
+                'message': PhoneError.INVALID_SIGNAL.value
+                }
+                return jsonify(response)
+            
 
     def run(self, host='0.0.0.0', port=5000):
         self.app.run(host=host, port=port)
