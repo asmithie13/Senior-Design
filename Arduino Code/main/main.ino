@@ -63,6 +63,7 @@ bool resetSig;
 //Initialize arrays for sending signals to LED checkerboard:
 //For rows, row #0 should correspond to pin #2 on the Arduino, row #1= pin #3, etc.:
 int rowVal[8]={2, 3, 4, 5, 6, 7, 8, 9};
+
 //For columns, column #0=pins 38 and 39, depending on the desired color, etc.:
 int colVal[8][2]=
 {
@@ -91,44 +92,7 @@ void setLEDPins(){
 
 //Function to update LED board based on checker positions:
 void updateBoardLEDs(){
-
-  //Iterate through all spaces on the board map:
-  /*for(int i=0; i<8; i++){
-    for(int j=0; j<8; j++){
-      //If there is no checker in the space, ensure that the rows and columns corresponding...
-      //...to that piece are disabled:
-
-      //Value to calculate the correct row:
-      int roundRow=j/2;
-      if(checkerBoard[i][j]==0){
-        digitalWrite(rowVal[i], LOW);
-        digitalWrite(colVal[i][0], LOW);
-        digitalWrite(colVal[i][1], LOW);
-      }
-      //Set Player #1's LEDs:
-      else if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
-        Serial.print("P1:\n");
-        Serial.print(rowVal[i]);
-        Serial.print(colVal[roundRow][0]);
-        Serial.print("\n");
-        
-        digitalWrite(rowVal[i], HIGH);
-        digitalWrite(colVal[roundRow][0], HIGH);
-        digitalWrite(colVal[roundRow][1], LOW);
-      }
-      //Set Player #2's LEDs:
-      else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
-        Serial.print("P2:\n");
-        Serial.print(rowVal[i]);
-        Serial.print(colVal[roundRow][1]);
-        Serial.print("\n");
-
-        digitalWrite(rowVal[i], HIGH);
-        digitalWrite(colVal[roundRow][0], LOW);
-        digitalWrite(colVal[roundRow][1], HIGH);
-      }
-    }
-  }*/
+  //Function will be populated when a concrete plan for displaying the LED matrix gas been constructed
 }
 
 //Wait for user keypad input:
@@ -208,7 +172,7 @@ void winSequence(){
     myDFPlayer.play(20);
   }
 
-  //[MAKE ENTIRE BOARD FLASH THE COLOR OF THE WINNER]
+  //[ADD LED PATTERN THAT INDICATES WIN]
 
   //Add short delay:
   delay(2000);
@@ -398,7 +362,6 @@ void checkForKing(){
   for(int i=0; i<8; i++){
     //If one of Player #2's checkers is in the first row, it should be awarded king status:
     if(checkerBoard[0][i]==2){
-      Serial.print("ENTER");
       checkerBoard[0][i]+=2;
     }
     //If one of Player #1's checkers is in the last row, it should be awarded king status:
@@ -422,20 +385,30 @@ void selectChecker(){
 
   //If the input coordinate was invalid, ask again:
   while(validFlag>0 || (coordOne+coordTwo)%2==0){
+    //If this is not the first iteration of the loop, it means that...
+    //the first player input was invalid. Therefore, display both an audio and visual signal indicating this:
     if(firstFlag!=0){
       myDFPlayer.play(29);
-
+      
+      //Print the appropriate message according to the player in-turn:
       if(playerInTurn.playerNum==1){
         lcd1.clear();
         lcd1.print("Invalid!");
       }
+      else{
+        lcd2.clear();
+        lcd2.print("Invalid!");
+      }
       delay(1500);
     }
 
+    //Increment the flag indicating whether or not the loop is in the first iteration:
     firstFlag++;
 
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
+
+    //Print the initial message:
     if(playerInTurn.playerNum==1){
       lcd1.clear();
       lcd1.print("Selected: (_, _)");
@@ -445,6 +418,7 @@ void selectChecker(){
       lcd2.print("Selected: (_, _)");
     }
 
+    //Get the first coordinate, as a character:
     getCoordOne=pollForSelection();
 
     //Check for reset:
@@ -452,6 +426,7 @@ void selectChecker(){
       return;
     }
 
+    //Display the coordinate:
     if(playerInTurn.playerNum==1){
       lcd1.clear();
       lcd1.setCursor(0, 0);
@@ -467,6 +442,7 @@ void selectChecker(){
       lcd2.print(", _)");
     }
 
+    //Play the corresponding sound:
     coordOne=getCoordOne-'0';
     if(getCoordOne=='#'){
       myDFPlayer.play(28);
@@ -487,6 +463,7 @@ void selectChecker(){
       myDFPlayer.play(audioArray[coordOne]);
     }
 
+    //Repeat for acquiring the second coordinate:
     getCoordTwo=pollForSelection();
     //Check for reset:
     if(resetSig==true){
@@ -719,7 +696,6 @@ int moveConditionsPlayerOne(int* neededPlayer, int coordOne, int coordTwo){
   }
   
   if(scoreFlag==1){
-    Serial.print("A");
     incrementScore();
   }
 
@@ -758,7 +734,6 @@ int moveConditionsPlayerTwo(int* neededPlayer, int coordOne, int coordTwo){
   }
   
   if(scoreFlag==1){
-    Serial.print("B");
     incrementScore();
   }
   
@@ -786,24 +761,35 @@ void moveChecker(){
     neededPlayer[1]=3;
   }
 
+  //Flag that indicates whether the loop is in the first iteration:
   int firstFlag=0;
 
   //If the input coordinate was invalid, ask again:
   while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
+    //If this is not the first iteration of the loop, it means that the user's first input...
+    //...was invalid. Display a message indicating this:
     if(firstFlag!=0){
       myDFPlayer.play(29);
 
+      //Display message to appropriate screen:
       if(playerInTurn.playerNum==1){
         lcd1.clear();
         lcd1.print("Invalid!");
       }
+      else{
+        lcd2.clear();
+        lcd2.print("Invalid!");
+      }
       delay(1500);
     }
 
+    //Increment the flag to show that the loop is not in the first iteration:
     firstFlag++;
 
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
+
+    //Display the initial message:
     if(playerInTurn.playerNum==1){
       lcd1.clear();
       lcd1.print("Moved to: (_, _)");
@@ -813,6 +799,7 @@ void moveChecker(){
       lcd2.print("Moved to: (_, _)");
     }
 
+    //Get the first coordinate, as a character:
     getCoordOne=pollForSelection();
 
     //Check for reset:
@@ -820,6 +807,7 @@ void moveChecker(){
       return;
     }
 
+    //Update the display with information about the first coordinate:
     if(playerInTurn.playerNum==1){
       lcd1.clear();
       lcd1.setCursor(0, 0);
@@ -835,6 +823,7 @@ void moveChecker(){
       lcd2.print(", _)");
     }
 
+    //Play the corresponding sound for the coordinate:
     coordOne=getCoordOne-'0';
     if(getCoordOne=='#'){
       myDFPlayer.play(28);
@@ -855,6 +844,7 @@ void moveChecker(){
       myDFPlayer.play(audioArray[coordOne]);
     }
 
+    //Repeat for second coordinate:
     getCoordTwo=pollForSelection();
     //Check for reset:
     if(resetSig==true){
@@ -1129,6 +1119,9 @@ void setup() {
   if(!myDFPlayer.begin(Serial2)){ //Ensure that the DFPlayer is initialized
     while (true);
   }
+
+  //Set the volume of the DFPlayer:
+  myDFPlayer.volume(25);
 
   //Initialize LCD display:
   lcd1.init();
