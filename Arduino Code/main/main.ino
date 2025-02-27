@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
+#include <DFRobotDFPlayerMini.h>
 
 //Struct to declare players:
 struct Player{
@@ -38,6 +39,9 @@ char hexaKeys[rowNum][colNum]={
 byte rowPins[rowNum]={22, 24, 26, 28};
 byte colPins[colNum]={30, 32, 34, 36};
 Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, rowNum, colNum); 
+
+//Declare an object to control the DFPlayer:
+DFRobotDFPlayerMini myDFPlayer;
 
 //This is an integer-based map of the board. If a checker belongs to Player #1, a '1' occupies the space. For Player #2, a "2" occupies...
 //...the space. If there is no checker in the space, a '0' is at the coordinate.
@@ -863,6 +867,9 @@ void setup() {
 
   //Initialize serial communication with the DFPlayer:
   Serial2.begin(9600);
+  if(!myDFPlayer.begin(Serial2)){ //Ensure that the DFPlayer is initialized
+    while (true);
+  }
 
   //Initialize LCD display:
   lcd1.init();
@@ -922,6 +929,9 @@ void loop() {
   playerInTurn.playerNum=1;
 
   if(gameModeChar=='A'){
+    //DFPlayer:
+    myDFPlayer.play(8);
+
     //Print messages to screens:
     lcd1.print("Selected:");
     lcd1.setCursor(0, 1);
@@ -929,36 +939,51 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Voice-Controlled");
-    delay(1500);
+    delay(4000);
 
     //Print pre-game messages:
     lcd1.clear();
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
+
+    //DFPlayer:
+    myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(19);
     lcd1.print("Begin!");
     lcd2.print("Begin!");
-    delay(1000);
+    delay(2000);
 
     //Enter the voice-controlled game:
     voiceControlledGame();
   }
   else if(gameModeChar=='B'){
+    //DFPlayer:
+    myDFPlayer.play(9);
+
     //Print messages to screens:
     lcd1.print("Selected:");
     lcd1.setCursor(0, 1);
@@ -966,31 +991,43 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Manual");
-    delay(1500);
+    delay(4000);
 
     //Print pre-game messages:
     lcd1.clear();
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
+
+    //DFPlayer:
+    myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(19);
     lcd1.print("Begin!");
     lcd2.print("Begin!");
-    delay(1000);
+    delay(2000);
 
     //Enter the manual game:
     manualGame();
