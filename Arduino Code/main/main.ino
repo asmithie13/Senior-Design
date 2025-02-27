@@ -53,6 +53,77 @@ int playerTwoScore=0;
 //Flag to determine if the reset signal was received when playing in manual mode:
 bool resetSig;
 
+//Initialize arrays for sending signals to LED checkerboard:
+//For rows, row #0 should correspond to pin #2 on the Arduino, row #1= pin #3, etc.:
+int rowVal[8]={2, 3, 4, 5, 6, 7, 8, 9};
+//For columns, column #0=pins 38 and 39, depending on the desired color, etc.:
+int colVal[8][2]=
+{
+  {38, 39},
+  {40, 41},
+  {42, 43},
+  {44, 45},
+};
+
+//Function to initialize each LED pin as an output, and set all to LOW:
+void setLEDPins(){
+  //First, initialize all row LEDs:
+  for(int i=0; i<8; i++){
+    pinMode(rowVal[i], OUTPUT);
+    digitalWrite(rowVal[i], LOW);
+  }
+
+  //Then, intialize all columns:
+  for(int i=0; i<4; i++){
+    for(int j=0; j<2; j++){
+      pinMode(colVal[i][j], OUTPUT);
+      digitalWrite(colVal[i][j], LOW);
+    }
+  }
+}
+
+//Function to update LED board based on checker positions:
+void updateBoardLEDs(){
+
+  //Iterate through all spaces on the board map:
+  /*for(int i=0; i<8; i++){
+    for(int j=0; j<8; j++){
+      //If there is no checker in the space, ensure that the rows and columns corresponding...
+      //...to that piece are disabled:
+
+      //Value to calculate the correct row:
+      int roundRow=j/2;
+      if(checkerBoard[i][j]==0){
+        digitalWrite(rowVal[i], LOW);
+        digitalWrite(colVal[i][0], LOW);
+        digitalWrite(colVal[i][1], LOW);
+      }
+      //Set Player #1's LEDs:
+      else if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
+        Serial.print("P1:\n");
+        Serial.print(rowVal[i]);
+        Serial.print(colVal[roundRow][0]);
+        Serial.print("\n");
+        
+        digitalWrite(rowVal[i], HIGH);
+        digitalWrite(colVal[roundRow][0], HIGH);
+        digitalWrite(colVal[roundRow][1], LOW);
+      }
+      //Set Player #2's LEDs:
+      else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
+        Serial.print("P2:\n");
+        Serial.print(rowVal[i]);
+        Serial.print(colVal[roundRow][1]);
+        Serial.print("\n");
+
+        digitalWrite(rowVal[i], HIGH);
+        digitalWrite(colVal[roundRow][0], LOW);
+        digitalWrite(colVal[roundRow][1], HIGH);
+      }
+    }
+  }*/
+}
+
 //Wait for user keypad input:
 char pollForSelection(){
   char customKey=customKeypad.getKey();
@@ -73,7 +144,7 @@ void initializeBoard(){
   for(int i=0; i<8; i++){
     for(int j=0; j<8; j++){
       int tempRemainder=(i+j)%2;
-      if(tempRemainder==0){
+      if(tempRemainder==1){
         if(i==0 || i==1 || i==2){
           checkerBoard[i][j]=1;
         }
@@ -124,34 +195,36 @@ void winSequence(){
 }
 
 //Receive coordinates, or reset signal, from the Raspberry Pi:
-int* getPiCoordinates() {
-  //Initialize an array to hold the selected checker and move coordinates:
-  int coordArray[4];
-
-  //Declare variable to count how many characters have been received:
-  int countVar=0;
-
-  //Check if serial data is received:
-  while(countVar<4){
+int* getPiCoordinates(int* coordArray) {
+  //Wait for Serial data from the Raspberry Pi:
+  while(1){
+    //If serial data has been received:
     if(Serial1.available()){
-      char data=Serial1.read(); //Read data, and convert it to an integer:
+      //Read data, and convert each character in the string to an integer:
+      String data=Serial1.readStringUntil('\n');
 
-      //If the reset signal is received, break from the loop:
-      if(data=='*'){
-        lcd1.clear();
-        lcd1.print("Reset received.");
-        delay(500);
-        return;
+      //Iterate through the string:
+      for(int i=0; i<5; i++){
+        //If the reset signal is received, break from the loop:
+        if(coordArray[i]=='*'){
+          resetSig=true;
+          lcd1.clear();
+          lcd2.clear();
+          lcd1.print("Reset received.");
+          lcd2.print("Reset received.");
+          delay(2000);
+          return;
+        }
+        //Otherwise, append the integer to the data array:
+        else{
+          coordArray[i]=data[i]-'0';
+        }
       }
 
-      //Otherwise, append the data to the return array, and increment the counter:
-      coordArray[countVar]=data-'0';
-      countVar++;
+      //If serial data was received successfully, break from the loop:
+      break;
     }
   }
-
-  //Return the coordinate array:
-  return coordArray; 
 }
 
 //Function to execute the voice-controlled game mode:
@@ -160,24 +233,31 @@ void voiceControlledGame(){
   int selectedChecker[2];
   int moveSpace[2];
 
-  //Initialize the screens:
-  lcd1.clear();
-  lcd2.clear();
-  lcd1.setCursor(0, 0);
-  lcd2.setCursor(0, 0);
-  lcd1.print("Your turn!");
-  lcd2.print("Waiting...");
-
-  //Get the coordinates serially from the Raspberry Pi:
-  int* coordArray=getPiCoordinates();
   while(1){
-    //Iterate through the received coordinates to ensure that the reset signal was not received:
-    for(int i=0; i<4; i++){
-      if(coordArray[i]=='*'){
-        break;
-      }
+    //Initialize the screens:
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.setCursor(0, 0);
+    lcd2.setCursor(0, 0);
+
+    //Display messages according to the player in-turn:
+    if(playerInTurn.playerNum==1){
+      lcd1.print("Your turn!");
+      lcd2.print("Waiting...");
     }
-    
+    else{
+      lcd2.print("Your turn!");
+      lcd1.print("Waiting...");
+    }
+    //Get coordinates from the Raspberry Pi:
+    int coordArray[4];
+    getPiCoordinates(coordArray);
+
+    //Check for the reset signal:
+    if(resetSig==true){
+      break;
+    }
+   
     //Assign values based on coordinates received:
     selectedChecker[0]=coordArray[0];
     selectedChecker[1]=coordArray[1];
@@ -203,26 +283,24 @@ void voiceControlledGame(){
 
       //Display move message:
       lcd1.clear();
-      lcd1.print("Selected checker: ");
+      lcd1.setCursor(0, 0);
+      lcd1.print("Selected: (");
+      lcd1.print(selectedChecker[0]);
+      lcd1.print(", ");
+      lcd1.print(selectedChecker[1]);
+      lcd1.print(")");
       lcd1.setCursor(0, 1);
-      char* selectCoord="(";
-      selectCoord+=selectedChecker[0];
-      selectCoord+=',';
-      selectCoord+=selectedChecker[1];
-      selectCoord+=')';
-      lcd1.print(selectCoord);
-      lcd1.setCursor(0, 2);
-      lcd1.print("Moved to:");
-      lcd1.setCursor(0, 3);
-      char* moveCoord='(';
-      moveCoord+=moveSpace[0];
-      moveCoord+=',';
-      moveCoord+=moveSpace[1];
-      moveCoord+=')';
-      lcd1.print(moveCoord);
+      lcd1.print("Moved to: (");
+      lcd1.print(moveSpace[0]);
+      lcd1.print(", ");
+      lcd1.print(moveSpace[1]);
+      lcd1.print(")");
+      delay(5000);
 
-      //Alternate player:
-      playerInTurn.playerNum=2;
+      //Alternate player, if no double-jump exists:
+      if(coordArray[4]==0){
+        playerInTurn.playerNum=2;
+      }
     }
     else{
       //Set the move space:
@@ -230,30 +308,31 @@ void voiceControlledGame(){
 
       //Display move message:
       lcd2.clear();
-      lcd2.print("Selected checker: ");
+      lcd2.setCursor(0, 0);
+      lcd2.print("Selected: (");
+      lcd2.print(selectedChecker[0]);
+      lcd2.print(", ");
+      lcd2.print(selectedChecker[1]);
+      lcd2.print(")");
       lcd2.setCursor(0, 1);
-      char* selectCoord="(";
-      selectCoord+=selectedChecker[0];
-      selectCoord+=',';
-      selectCoord+=selectedChecker[1];
-      selectCoord+=')';
-      lcd2.print(selectCoord);
-      lcd2.setCursor(0, 2);
-      lcd2.print("Moved to:");
-      lcd2.setCursor(0, 3);
-      char* moveCoord='(';
-      moveCoord+=moveSpace[0];
-      moveCoord+=',';
-      moveCoord+=moveSpace[1];
-      moveCoord+=')';
-      lcd2.print(moveCoord);
+      lcd2.print("Moved to: (");
+      lcd2.print(moveSpace[0]);
+      lcd2.print(", ");
+      lcd2.print(moveSpace[1]);
+      lcd2.print(")");
+      delay(5000);
 
-      //Alternate player:
-      playerInTurn.playerNum=1;
+      //Alternate player, if no double-jump exists:
+      if(coordArray[4]==0){
+        playerInTurn.playerNum=1;
+      }
     }
 
     //Check to see if a king-space must be awarded:
     checkForKing();
+
+    //Show the board configuration:
+    testBoardConfig();
   }
 }
 
@@ -298,7 +377,7 @@ void selectChecker(){
   int validFlag=1;
 
   //If the input coordinate was invalid, ask again:
-  while(validFlag>0 || (coordOne+coordTwo)%2==1){ //"(coordOne+coordTwo)%2==1" signals that the input coordinate is on an un-used square in the game
+  while(validFlag>0 || (coordOne+coordTwo)%2==0){ //"(coordOne+coordTwo)%2==1" signals that the input coordinate is on an un-used square in the game
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
     coordOne=pollForSelection()-'0';
@@ -565,7 +644,7 @@ void moveChecker(){
   }
 
   //If the input coordinate was invalid, ask again:
-  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==1 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
+  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
     coordOne=pollForSelection()-'0';
@@ -745,6 +824,32 @@ void manualGame(){
     if(isWinner==true){
       break;
     }
+
+    //If there isn't a winner, update the LED board accordingly:
+    updateBoardLEDs();
+  }
+}
+
+//Stub game to test win sequences:
+void stubManualMode(){
+  while(1){
+    //Set the game board so that Player #1 has no pieces left:
+    //Initialize the checkers with all pieces in the correct position:
+    for(int i=0; i<8; i++){
+      for(int j=0; j<8; j++){
+        checkerBoard[i][j]=1;
+      }
+    }
+
+    //Set the player score, to expect a desired winner:
+    playerTwoScore=1;
+
+    //Check for the win sequence, and expect it to be activated:
+    int isWinner=NULL;
+    isWinner=checkForWinner();
+    if(isWinner==true){
+      break;
+    }
   }
 }
 
@@ -756,6 +861,9 @@ void setup() {
   //Initialize serial communication with the Raspberry Pi:
   Serial1.begin(9600);
 
+  //Initialize serial communication with the DFPlayer:
+  Serial2.begin(9600);
+
   //Initialize LCD display:
   lcd1.init();
   lcd1.backlight();
@@ -763,12 +871,18 @@ void setup() {
   //Initialize the second display:
   lcd2.init();
   lcd2.backlight();
+
+  //Initialize all used LED pins as output:
+  setLEDPins();
 }
 
 //Begin the game:
 void loop() {
   //Initialize the board (same for both game modes):
   initializeBoard();
+
+  //Initialize the LED matrix:
+  updateBoardLEDs();
 
   //TEST:
   testBoardConfig();
@@ -815,6 +929,31 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Voice-Controlled");
+    delay(1500);
+
+    //Print pre-game messages:
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.setCursor(0, 0);
+    lcd2.setCursor(0, 0);
+    lcd1.print("3");
+    lcd2.print("3");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("2");
+    lcd2.print("2");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("1");
+    lcd2.print("1");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("Begin!");
+    lcd2.print("Begin!");
+    delay(1000);
 
     //Enter the voice-controlled game:
     voiceControlledGame();
@@ -827,9 +966,37 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Manual");
+    delay(1500);
+
+    //Print pre-game messages:
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.setCursor(0, 0);
+    lcd2.setCursor(0, 0);
+    lcd1.print("3");
+    lcd2.print("3");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("2");
+    lcd2.print("2");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("1");
+    lcd2.print("1");
+    delay(1000);
+    lcd1.clear();
+    lcd2.clear();
+    lcd1.print("Begin!");
+    lcd2.print("Begin!");
+    delay(1000);
 
     //Enter the manual game:
     manualGame();
+
+    //TEST:
+    //stubManualMode();
   }
 
   //After either game is over, play the win-sequence:

@@ -67,9 +67,9 @@ class GameBoard():
             print(f"An unexpected error occurred: {e}")
             return None
         
-    def sendMoveToArduino(self, move):
+    def sendMoveToArduino(self, move, moveType):
         try:
-            tempData = str(move.start[0]) + str(move.start[1]) + str(move.end[0]) + str(move.end[1])
+            tempData = str(move.start[0]) + str(move.start[1]) + str(move.end[0]) + str(move.end[1]) + str(moveType.value)
             self.serialObject.write(tempData.encode())
             return True
         except Exception as e:
@@ -140,7 +140,7 @@ class GameBoard():
         if xDistance == 1:
             self.regularMove(move)
             self.switchPlayers()
-            self.sendMoveToArduino(move)
+            self.sendMoveToArduino(move, MoveType.NON_JUMP_MOVE)
             return True, MoveSuccess.NORMAL_MOVE
         else:
             # One jump case
@@ -156,9 +156,12 @@ class GameBoard():
                     self.handleReset()
                     return True, MoveSuccess.GAME_OVER
                 self.canDoubleJump(move)
-                self.sendMoveToArduino(move)
+
                 if self.canDoubleJumpFlag:
+                    self.sendMoveToArduino(move, MoveType.JUMP_MOVE)
                     return True, MoveSuccess.DOUBLE_JUMP
+                
+                self.sendMoveToArduino(move, MoveType.NON_JUMP_MOVE)
                 self.switchPlayers()
                 self.canDoubleJumpFlag = False
                 self.doubleJumpNextMoves = []
