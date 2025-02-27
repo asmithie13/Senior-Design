@@ -1,4 +1,6 @@
 #include <MaxMatrix.h>
+//link to download library
+//https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/arudino-maxmatrix-library/MaxMatrix.zip
 
 #define maxDisplays 1  // Adjust for the number of MAX7219 chips
 #define dataPin 11     // DIN pin
