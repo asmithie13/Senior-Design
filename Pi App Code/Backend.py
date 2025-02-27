@@ -26,6 +26,7 @@ class Backend:
         
             # Reset case
             if data == "*":
+                print("Reset Signal Sent")
                 self.gb.handleReset()
                 # TODO
                 # DO YOU WANT ME TO TELL YOU I RECEIVED THE RESET??
@@ -33,7 +34,9 @@ class Backend:
             
             # Normal move case
             try:
-                result = self.gb.validateMove(Move([data[0], data[1]], [data[2], data[3]]))
+                result = self.gb.validateMove(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                print(result[0])
+                print(result[1].value)
                 response = {
                 'status': result[0],
                 'message': result[1]
