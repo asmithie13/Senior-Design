@@ -15,6 +15,10 @@ class Player(Enum):
     BLACK = 1
     RED = 2
 
+class MoveType(Enum):
+    NON_JUMP_MOVE = 0
+    JUMP_MOVE = 1
+
 class MoveError(str, Enum):
     START_OUT_OF_BOUNDS = "Invalid move: Start position out of bounds."
     END_OUT_OF_BOUNDS = "Invalid move: End position out of bounds."
