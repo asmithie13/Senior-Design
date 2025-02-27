@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
+#include <DFRobotDFPlayerMini.h>
 
 //Struct to declare players:
 struct Player{
@@ -39,6 +40,12 @@ byte rowPins[rowNum]={22, 24, 26, 28};
 byte colPins[colNum]={30, 32, 34, 36};
 Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, rowNum, colNum); 
 
+//Declare an object to control the DFPlayer:
+DFRobotDFPlayerMini myDFPlayer;
+
+//Array that indicates where the audio file is located for each coordinate value:
+int audioArray[10]={1, 14, 4, 5, 17, 18, 6, 7, 21, 22};
+
 //This is an integer-based map of the board. If a checker belongs to Player #1, a '1' occupies the space. For Player #2, a "2" occupies...
 //...the space. If there is no checker in the space, a '0' is at the coordinate.
 int checkerBoard[8][8];
@@ -56,6 +63,7 @@ bool resetSig;
 //Initialize arrays for sending signals to LED checkerboard:
 //For rows, row #0 should correspond to pin #2 on the Arduino, row #1= pin #3, etc.:
 int rowVal[8]={2, 3, 4, 5, 6, 7, 8, 9};
+
 //For columns, column #0=pins 38 and 39, depending on the desired color, etc.:
 int colVal[8][2]=
 {
@@ -84,44 +92,7 @@ void setLEDPins(){
 
 //Function to update LED board based on checker positions:
 void updateBoardLEDs(){
-
-  //Iterate through all spaces on the board map:
-  /*for(int i=0; i<8; i++){
-    for(int j=0; j<8; j++){
-      //If there is no checker in the space, ensure that the rows and columns corresponding...
-      //...to that piece are disabled:
-
-      //Value to calculate the correct row:
-      int roundRow=j/2;
-      if(checkerBoard[i][j]==0){
-        digitalWrite(rowVal[i], LOW);
-        digitalWrite(colVal[i][0], LOW);
-        digitalWrite(colVal[i][1], LOW);
-      }
-      //Set Player #1's LEDs:
-      else if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
-        Serial.print("P1:\n");
-        Serial.print(rowVal[i]);
-        Serial.print(colVal[roundRow][0]);
-        Serial.print("\n");
-        
-        digitalWrite(rowVal[i], HIGH);
-        digitalWrite(colVal[roundRow][0], HIGH);
-        digitalWrite(colVal[roundRow][1], LOW);
-      }
-      //Set Player #2's LEDs:
-      else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
-        Serial.print("P2:\n");
-        Serial.print(rowVal[i]);
-        Serial.print(colVal[roundRow][1]);
-        Serial.print("\n");
-
-        digitalWrite(rowVal[i], HIGH);
-        digitalWrite(colVal[roundRow][0], LOW);
-        digitalWrite(colVal[roundRow][1], HIGH);
-      }
-    }
-  }*/
+  //Function will be populated when a concrete plan for displaying the LED matrix gas been constructed
 }
 
 //Wait for user keypad input:
@@ -174,21 +145,34 @@ void winSequence(){
   lcd1.setCursor(0, 1);
   lcd2.setCursor(0, 1);
 
+  //DFPlayer:
+  myDFPlayer.play(16);
+  delay(1500);
+
   //Print winner:
   if(playerOneScore>playerTwoScore){
     lcd1.print("Player #1 wins!");
     lcd2.print("Player #1 wins!");
+
+    //DFPlayer:
+    myDFPlayer.play(13);
   }
   else if(playerOneScore<playerTwoScore){
     lcd1.print("Player #2 wins!");
     lcd2.print("Player #2 wins!");
+
+    //DFPlayer:
+    myDFPlayer.play(12);
   }
   else{
     lcd1.print("Tie game!");
     lcd2.print("Tie game!");
+
+    //DFPlayer:
+    myDFPlayer.play(20);
   }
 
-  //[MAKE ENTIRE BOARD FLASH THE COLOR OF THE WINNER]
+  //[ADD LED PATTERN THAT INDICATES WIN]
 
   //Add short delay:
   delay(2000);
@@ -244,10 +228,16 @@ void voiceControlledGame(){
     if(playerInTurn.playerNum==1){
       lcd1.print("Your turn!");
       lcd2.print("Waiting...");
+
+      //DFPlayer:
+      myDFPlayer.play(3);
     }
     else{
       lcd2.print("Your turn!");
       lcd1.print("Waiting...");
+
+      //DFPlayer:
+      myDFPlayer.play(2);
     }
     //Get coordinates from the Raspberry Pi:
     int coordArray[4];
@@ -297,6 +287,7 @@ void voiceControlledGame(){
       lcd1.print(")");
       delay(5000);
 
+
       //Alternate player, if no double-jump exists:
       if(coordArray[4]==0){
         playerInTurn.playerNum=2;
@@ -328,6 +319,19 @@ void voiceControlledGame(){
       }
     }
 
+    //DFPlayer:
+    myDFPlayer.play(10);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[0]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[1]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[15]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[moveSpace[0]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[moveSpace[1]]);
+
     //Check to see if a king-space must be awarded:
     checkForKing();
 
@@ -358,7 +362,6 @@ void checkForKing(){
   for(int i=0; i<8; i++){
     //If one of Player #2's checkers is in the first row, it should be awarded king status:
     if(checkerBoard[0][i]==2){
-      Serial.print("ENTER");
       checkerBoard[0][i]+=2;
     }
     //If one of Player #1's checkers is in the last row, it should be awarded king status:
@@ -371,25 +374,141 @@ void checkForKing(){
 //Ensure that the checker is able to be selected:
 void selectChecker(){
   //Declare variables to hold the checker's coordinates:
+  char getCoordOne, getCoordTwo;
   int coordOne, coordTwo;
 
   //Flag to further signal if the move is valid:
   int validFlag=1;
 
+  //Determines if this is the first iteration within the loop:
+  int firstFlag=0;
+
   //If the input coordinate was invalid, ask again:
-  while(validFlag>0 || (coordOne+coordTwo)%2==0){ //"(coordOne+coordTwo)%2==1" signals that the input coordinate is on an un-used square in the game
+  while(validFlag>0 || (coordOne+coordTwo)%2==0){
+    //If this is not the first iteration of the loop, it means that...
+    //the first player input was invalid. Therefore, display both an audio and visual signal indicating this:
+    if(firstFlag!=0){
+      myDFPlayer.play(29);
+      
+      //Print the appropriate message according to the player in-turn:
+      if(playerInTurn.playerNum==1){
+        lcd1.clear();
+        lcd1.print("Invalid!");
+      }
+      else{
+        lcd2.clear();
+        lcd2.print("Invalid!");
+      }
+      delay(1500);
+    }
+
+    //Increment the flag indicating whether or not the loop is in the first iteration:
+    firstFlag++;
+
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
-    coordOne=pollForSelection()-'0';
+
+    //Print the initial message:
+    if(playerInTurn.playerNum==1){
+      lcd1.clear();
+      lcd1.print("Selected: (_, _)");
+    }
+    else{
+      lcd2.clear();
+      lcd2.print("Selected: (_, _)");
+    }
+
+    //Get the first coordinate, as a character:
+    getCoordOne=pollForSelection();
+
     //Check for reset:
     if(resetSig==true){
       return;
     }
-    coordTwo=pollForSelection()-'0';
+
+    //Display the coordinate:
+    if(playerInTurn.playerNum==1){
+      lcd1.clear();
+      lcd1.setCursor(0, 0);
+      lcd1.print("Selected: (");
+      lcd1.print(getCoordOne);
+      lcd1.print(", _)");
+    }
+    else{
+      lcd2.clear();
+      lcd2.setCursor(0, 0);
+      lcd2.print("Selected: (");
+      lcd2.print(getCoordOne);
+      lcd2.print(", _)");
+    }
+
+    //Play the corresponding sound:
+    coordOne=getCoordOne-'0';
+    if(getCoordOne=='#'){
+      myDFPlayer.play(28);
+    }
+    else if(getCoordOne=='A'){
+      myDFPlayer.play(23);
+    }
+    else if(getCoordOne=='B'){
+      myDFPlayer.play(24);
+    }
+    else if(getCoordOne=='C'){
+      myDFPlayer.play(25);
+    }
+    else if(getCoordOne=='D'){
+      myDFPlayer.play(26);
+    }
+    else{
+      myDFPlayer.play(audioArray[coordOne]);
+    }
+
+    //Repeat for acquiring the second coordinate:
+    getCoordTwo=pollForSelection();
     //Check for reset:
     if(resetSig==true){
       return;
     }
+
+    if(playerInTurn.playerNum==1){
+      lcd1.clear();
+      lcd1.setCursor(0, 0);
+      lcd1.print("Selected: (");
+      lcd1.print(getCoordOne);
+      lcd1.print(", ");
+      lcd1.print(getCoordTwo);
+      lcd1.print(")");
+    }
+    else{
+      lcd2.clear();
+      lcd2.setCursor(0, 0);
+      lcd2.print("Selected: (");
+      lcd2.print(getCoordOne);
+      lcd2.print(", ");
+      lcd2.print(getCoordTwo);
+      lcd2.print(")");
+    }
+
+    coordTwo=getCoordTwo-'0';
+    if(getCoordTwo=='#'){
+      myDFPlayer.play(28);
+    }
+    else if(getCoordTwo=='A'){
+      myDFPlayer.play(23);
+    }
+    else if(getCoordTwo=='B'){
+      myDFPlayer.play(24);
+    }
+    else if(getCoordTwo=='C'){
+      myDFPlayer.play(25);
+    }
+    else if(getCoordTwo=='D'){
+      myDFPlayer.play(26);
+    }
+    else{
+      myDFPlayer.play(audioArray[coordTwo]);
+    }
+    delay(1000);
 
     //Coordinate exceeds board limits:
     if(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7){
@@ -577,7 +696,6 @@ int moveConditionsPlayerOne(int* neededPlayer, int coordOne, int coordTwo){
   }
   
   if(scoreFlag==1){
-    Serial.print("A");
     incrementScore();
   }
 
@@ -616,7 +734,6 @@ int moveConditionsPlayerTwo(int* neededPlayer, int coordOne, int coordTwo){
   }
   
   if(scoreFlag==1){
-    Serial.print("B");
     incrementScore();
   }
   
@@ -627,6 +744,7 @@ int moveConditionsPlayerTwo(int* neededPlayer, int coordOne, int coordTwo){
 //Select the space to move the checker to:
 void moveChecker(){
   //Variables to hold each coordinate:
+  char getCoordOne, getCoordTwo;
   int coordOne, coordTwo;
 
   //Flag to determine if the move is valid:
@@ -643,20 +761,135 @@ void moveChecker(){
     neededPlayer[1]=3;
   }
 
+  //Flag that indicates whether the loop is in the first iteration:
+  int firstFlag=0;
+
   //If the input coordinate was invalid, ask again:
   while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
+    //If this is not the first iteration of the loop, it means that the user's first input...
+    //...was invalid. Display a message indicating this:
+    if(firstFlag!=0){
+      myDFPlayer.play(29);
+
+      //Display message to appropriate screen:
+      if(playerInTurn.playerNum==1){
+        lcd1.clear();
+        lcd1.print("Invalid!");
+      }
+      else{
+        lcd2.clear();
+        lcd2.print("Invalid!");
+      }
+      delay(1500);
+    }
+
+    //Increment the flag to show that the loop is not in the first iteration:
+    firstFlag++;
+
     //Print that the user must input additional values, since the first value was invalid. Either the...
     //...coordinate is not present on the board, or a checker is not at that position:
-    coordOne=pollForSelection()-'0';
+
+    //Display the initial message:
+    if(playerInTurn.playerNum==1){
+      lcd1.clear();
+      lcd1.print("Moved to: (_, _)");
+    }
+    else{
+      lcd2.clear();
+      lcd2.print("Moved to: (_, _)");
+    }
+
+    //Get the first coordinate, as a character:
+    getCoordOne=pollForSelection();
+
     //Check for reset:
     if(resetSig==true){
       return;
     }
-    coordTwo=pollForSelection()-'0';
+
+    //Update the display with information about the first coordinate:
+    if(playerInTurn.playerNum==1){
+      lcd1.clear();
+      lcd1.setCursor(0, 0);
+      lcd1.print("Moved to: (");
+      lcd1.print(getCoordOne);
+      lcd1.print(", _)");
+    }
+    else{
+      lcd2.clear();
+      lcd2.setCursor(0, 0);
+      lcd2.print("Moved to: (");
+      lcd2.print(getCoordOne);
+      lcd2.print(", _)");
+    }
+
+    //Play the corresponding sound for the coordinate:
+    coordOne=getCoordOne-'0';
+    if(getCoordOne=='#'){
+      myDFPlayer.play(28);
+    }
+    else if(getCoordOne=='A'){
+      myDFPlayer.play(23);
+    }
+    else if(getCoordOne=='B'){
+      myDFPlayer.play(24);
+    }
+    else if(getCoordOne=='C'){
+      myDFPlayer.play(25);
+    }
+    else if(getCoordOne=='D'){
+      myDFPlayer.play(26);
+    }
+    else{
+      myDFPlayer.play(audioArray[coordOne]);
+    }
+
+    //Repeat for second coordinate:
+    getCoordTwo=pollForSelection();
     //Check for reset:
     if(resetSig==true){
       return;
     }
+
+    if(playerInTurn.playerNum==1){
+      lcd1.clear();
+      lcd1.setCursor(0, 0);
+      lcd1.print("Moved to: (");
+      lcd1.print(getCoordOne);
+      lcd1.print(", ");
+      lcd1.print(getCoordTwo);
+      lcd1.print(")");
+    }
+    else{
+      lcd2.clear();
+      lcd2.setCursor(0, 0);
+      lcd2.print("Moved to: (");
+      lcd2.print(getCoordOne);
+      lcd2.print(", ");
+      lcd2.print(getCoordTwo);
+      lcd2.print(")");
+    }
+
+    coordTwo=getCoordTwo-'0';
+    if(getCoordTwo=='#'){
+      myDFPlayer.play(28);
+    }
+    else if(getCoordTwo=='A'){
+      myDFPlayer.play(23);
+    }
+    else if(getCoordTwo=='B'){
+      myDFPlayer.play(24);
+    }
+    else if(getCoordTwo=='C'){
+      myDFPlayer.play(25);
+    }
+    else if(getCoordTwo=='D'){
+      myDFPlayer.play(26);
+    }
+    else{
+      myDFPlayer.play(audioArray[coordTwo]);
+    }
+    delay(1000);
 
     //First, ensure that the coordinates of the desired move are within the proper bounds:
     if(coordOne>=0 && coordOne<8 && coordTwo>=0 && coordTwo<8){
@@ -697,6 +930,7 @@ void moveChecker(){
   //Display the desired message based on the player in-turn:
   if(playerInTurn.playerNum==1){
     lcd1.clear();
+    delay(300);
     lcd1.print("Moved to: (");
     lcd1.print(coordOne);
     lcd1.print(", ");
@@ -705,6 +939,7 @@ void moveChecker(){
   }
   else{
     lcd2.clear();
+    delay(300);
     lcd2.print("Moved to: (");
     lcd2.print(coordOne);
     lcd2.print(", ");
@@ -712,8 +947,12 @@ void moveChecker(){
     lcd2.print(")");
   }
 
-  //Short delay:
-  delay(1000);
+  //DFPlayer:
+  myDFPlayer.play(15);
+  delay(1500);
+  myDFPlayer.play(audioArray[coordOne]);
+  delay(1500);
+  myDFPlayer.play(audioArray[coordTwo]);
 
   //Set the spot where the selected checker was to an empty space:
   checkerBoard[selectedChecker[0]][selectedChecker[1]]=0;
@@ -762,10 +1001,15 @@ void manualGame(){
     if(playerInTurn.playerNum==1){
       lcd1.print("Your turn!");
       lcd2.print("Waiting...");
+
+      //DFPlayer:
+      myDFPlayer.play(3);
     }
     else{
       lcd2.print("Your turn!");
       lcd1.print("Waiting...");
+      //DFPlayer:
+      myDFPlayer.play(2);
     }
   
     //Select the checker to be moved:
@@ -779,6 +1023,7 @@ void manualGame(){
     //Display messages based on the player in-turn:
     if(playerInTurn.playerNum==1){
       lcd1.clear();
+      delay(300);
       lcd1.print("Selected: (");
       lcd1.print(selectedChecker[0]);
       lcd1.print(", ");
@@ -787,12 +1032,20 @@ void manualGame(){
     }
     else{
       lcd2.clear();
+      delay(300);
       lcd2.print("Selected: (");
       lcd2.print(selectedChecker[0]);
       lcd2.print(", ");
       lcd2.print(selectedChecker[1]);
       lcd2.print(")");
     }
+
+    //DFPlayer:
+    myDFPlayer.play(10);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[0]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[1]]);
 
     //Move the selected checker:
     moveChecker();
@@ -863,6 +1116,12 @@ void setup() {
 
   //Initialize serial communication with the DFPlayer:
   Serial2.begin(9600);
+  if(!myDFPlayer.begin(Serial2)){ //Ensure that the DFPlayer is initialized
+    while (true);
+  }
+
+  //Set the volume of the DFPlayer:
+  myDFPlayer.volume(25);
 
   //Initialize LCD display:
   lcd1.init();
@@ -922,6 +1181,9 @@ void loop() {
   playerInTurn.playerNum=1;
 
   if(gameModeChar=='A'){
+    //DFPlayer:
+    myDFPlayer.play(8);
+
     //Print messages to screens:
     lcd1.print("Selected:");
     lcd1.setCursor(0, 1);
@@ -929,36 +1191,51 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Voice-Controlled");
-    delay(1500);
+    delay(4000);
 
     //Print pre-game messages:
     lcd1.clear();
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
+
+    //DFPlayer:
+    myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(19);
     lcd1.print("Begin!");
     lcd2.print("Begin!");
-    delay(1000);
+    delay(1500);
 
     //Enter the voice-controlled game:
     voiceControlledGame();
   }
   else if(gameModeChar=='B'){
+    //DFPlayer:
+    myDFPlayer.play(9);
+
     //Print messages to screens:
     lcd1.print("Selected:");
     lcd1.setCursor(0, 1);
@@ -966,31 +1243,59 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Manual");
-    delay(1500);
+    delay(4000);
+
+    //DFPlayer:
+    myDFPlayer.play(30);
+
+    //Print messages to screens:
+    lcd1.clear();
+    lcd1.setCursor(0, 0);
+    lcd1.print("To end the game,");
+    lcd1.setCursor(0, 1);
+    lcd1.print("press '*'");
+    lcd2.clear();
+    lcd2.setCursor(0, 0);
+    lcd2.print("To end the game,");
+    lcd2.setCursor(0, 1);
+    lcd2.print("press '*'");
+    delay(4000);
 
     //Print pre-game messages:
     lcd1.clear();
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
+
+    //DFPlayer:
+    myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1000);
+    delay(1500);
     lcd1.clear();
     lcd2.clear();
+
+    //DFPlayer:
+    myDFPlayer.play(19);
     lcd1.print("Begin!");
     lcd2.print("Begin!");
-    delay(1000);
+    delay(1500);
 
     //Enter the manual game:
     manualGame();
