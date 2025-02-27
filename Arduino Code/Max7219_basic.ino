@@ -16,7 +16,7 @@ void setup() {
 
 void loop() {
   matrix.clear();  // Clear the display
-  matrix.setDot(0,1, 0xFF);
+  matrix.setDot(0,1, 0xFF); // set top right blue
   matrix.setDot(1,1, 0xFF);
   matrix.setDot(2,1, 0xFF);
   matrix.setDot(0,3, 0xFF);
@@ -40,7 +40,7 @@ void loop() {
   matrix.setDot(5,4, 0xFF);
   matrix.setDot(7,6, 0xFF);
   matrix.setDot(6,6, 0xFF);
-  matrix.setDot(5,6, 0xFF);
+  matrix.setDot(5,6, 0xFF); // set bottom left red
 
 
 
