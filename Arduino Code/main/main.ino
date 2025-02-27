@@ -43,6 +43,9 @@ Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, rowNum, col
 //Declare an object to control the DFPlayer:
 DFRobotDFPlayerMini myDFPlayer;
 
+//Array that indicates where the audio file is located for each coordinate value:
+int audioArray[8]={1, 14, 4, 5, 17, 18, 6, 7};
+
 //This is an integer-based map of the board. If a checker belongs to Player #1, a '1' occupies the space. For Player #2, a "2" occupies...
 //...the space. If there is no checker in the space, a '0' is at the coordinate.
 int checkerBoard[8][8];
@@ -178,18 +181,31 @@ void winSequence(){
   lcd1.setCursor(0, 1);
   lcd2.setCursor(0, 1);
 
+  //DFPlayer:
+  myDFPlayer.play(16);
+  delay(1500);
+
   //Print winner:
   if(playerOneScore>playerTwoScore){
     lcd1.print("Player #1 wins!");
     lcd2.print("Player #1 wins!");
+
+    //DFPlayer:
+    myDFPlayer.play(13);
   }
   else if(playerOneScore<playerTwoScore){
     lcd1.print("Player #2 wins!");
     lcd2.print("Player #2 wins!");
+
+    //DFPlayer:
+    myDFPlayer.play(12);
   }
   else{
     lcd1.print("Tie game!");
     lcd2.print("Tie game!");
+
+    //DFPlayer:
+    myDFPlayer.play(20);
   }
 
   //[MAKE ENTIRE BOARD FLASH THE COLOR OF THE WINNER]
@@ -248,10 +264,18 @@ void voiceControlledGame(){
     if(playerInTurn.playerNum==1){
       lcd1.print("Your turn!");
       lcd2.print("Waiting...");
+
+      //DFPlayer:
+      myDFPlayer.play(3);
+      delay(1500);
     }
     else{
       lcd2.print("Your turn!");
       lcd1.print("Waiting...");
+
+      //DFPlayer:
+      myDFPlayer.play(2);
+      delay(1500);
     }
     //Get coordinates from the Raspberry Pi:
     int coordArray[4];
@@ -301,6 +325,7 @@ void voiceControlledGame(){
       lcd1.print(")");
       delay(5000);
 
+
       //Alternate player, if no double-jump exists:
       if(coordArray[4]==0){
         playerInTurn.playerNum=2;
@@ -331,6 +356,19 @@ void voiceControlledGame(){
         playerInTurn.playerNum=1;
       }
     }
+
+    //DFPlayer:
+    myDFPlayer.play(10);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[0]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[1]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[15]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[moveSpace[0]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[moveSpace[1]]);
 
     //Check to see if a king-space must be awarded:
     checkForKing();
@@ -716,8 +754,13 @@ void moveChecker(){
     lcd2.print(")");
   }
 
-  //Short delay:
-  delay(1000);
+  //DFPlayer:
+  myDFPlayer.play(15);
+  delay(1500);
+  myDFPlayer.play(audioArray[coordOne]);
+  delay(1500);
+  myDFPlayer.play(audioArray[coordTwo]);
+  delay(1500);
 
   //Set the spot where the selected checker was to an empty space:
   checkerBoard[selectedChecker[0]][selectedChecker[1]]=0;
@@ -766,10 +809,17 @@ void manualGame(){
     if(playerInTurn.playerNum==1){
       lcd1.print("Your turn!");
       lcd2.print("Waiting...");
+
+      //DFPlayer:
+      myDFPlayer.play(3);
+      delay(2000);
     }
     else{
       lcd2.print("Your turn!");
       lcd1.print("Waiting...");
+      //DFPlayer:
+      myDFPlayer.play(2);
+      delay(2000);
     }
   
     //Select the checker to be moved:
@@ -797,6 +847,14 @@ void manualGame(){
       lcd2.print(selectedChecker[1]);
       lcd2.print(")");
     }
+
+    //DFPlayer:
+    myDFPlayer.play(10);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[0]]);
+    delay(1500);
+    myDFPlayer.play(audioArray[selectedChecker[1]]);
+    delay(1500);
 
     //Move the selected checker:
     moveChecker();
