@@ -1,25 +1,32 @@
 from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+class PiServer:
+    def __init__(self, name):
+        self.app = Flask(name)
+        self._registerRoutes()
 
-@app.route('/getData/<status>/<message>', methods=['GET'])
-def getData(status, message):
-    response = {
-        'status': status,
-        'message': message
-    }
-    return jsonify(response)
+    def _registerRoutes(self):
+        @self.app.route('/getData/<status>/<message>', methods=['GET'])
+        def getData(status, message):
+            response = {
+                'status': status,
+                'message': message
+            }
+            return jsonify(response)
 
-@app.route('/sendData', methods=['POST'])
-def sendData():
-    data = request.data.decode('utf-8')
-    print(f"Received data: {data}")
+        @self.app.route('/sendData', methods=['POST'])
+        def sendData():
+            data = request.data.decode('utf-8')
+            print(f"Received data: {data}")
+            
+            response = {
+                'message': 'Data received successfully!',
+                'status': 'success'
+            }
+            return jsonify(response)
 
-    response = {
-        'message': 'Data received successfully!',
-        'status': 'success'
-    }
-    return jsonify(response)
+    def run(self, host='0.0.0.0', port=5000):
+        self.app.run(host=host, port=port)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+#app = PiServer(__name__)
+#app.run()
