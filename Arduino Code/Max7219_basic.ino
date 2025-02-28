@@ -6,43 +6,57 @@
 #define dataPin 11     // DIN pin
 #define loadPin 10     // CS pin
 #define clockPin 13    // CLK pin
-
 MaxMatrix matrix(dataPin, loadPin, clockPin, maxDisplays);
 
 void setup() {
   matrix.init();
-  matrix.setIntensity(8);  // Set brightness (current limit) 0 to 15
+  matrix.setIntensity(5);  // Set brightness (current limit) 0 to 15
 }
 
 void loop() {
   matrix.clear();  // Clear the display
-  matrix.setDot(0,1, 0xFF); // set top right blue
-  matrix.setDot(1,1, 0xFF);
-  matrix.setDot(2,1, 0xFF);
-  matrix.setDot(0,3, 0xFF);
-  matrix.setDot(1,3, 0xFF);
-  matrix.setDot(2,3, 0xFF);
-  matrix.setDot(0,5, 0xFF);
-  matrix.setDot(1,5, 0xFF);
-  matrix.setDot(2,5, 0xFF);
-  matrix.setDot(0,7, 0xFF);
-  matrix.setDot(1,7, 0xFF);
-  matrix.setDot(2,7, 0xFF);
+
+  matrix.setDot(0,0, 0xFF); // set top to red
+
+  matrix.setDot(1,0, 0xFF); 
+  matrix.setDot(1,2, 0xFF);
+
+  matrix.setDot(2,0, 0xFF);
+
+  matrix.setDot(3,0, 0xFF);
+  matrix.setDot(3,2, 0xFF);
+
+  matrix.setDot(4,0, 0xFF);
+
+  matrix.setDot(5,0, 0xFF);
+  matrix.setDot(5,2, 0xFF);
+
+  matrix.setDot(6,0, 0xFF);
 
   matrix.setDot(7,0, 0xFF);
-  matrix.setDot(6,0, 0xFF);
-  matrix.setDot(5,0, 0xFF);
   matrix.setDot(7,2, 0xFF);
-  matrix.setDot(6,2, 0xFF);
-  matrix.setDot(5,2, 0xFF);
-  matrix.setDot(7,4, 0xFF);
-  matrix.setDot(6,4, 0xFF);
-  matrix.setDot(5,4, 0xFF);
-  matrix.setDot(7,6, 0xFF);
-  matrix.setDot(6,6, 0xFF);
-  matrix.setDot(5,6, 0xFF); // set bottom left red
+
+  matrix.setDot(0,7, 0xFF); // set bottom to blue
+  matrix.setDot(0,5, 0xFF);
+
+  matrix.setDot(1,7, 0xFF); 
+
+  matrix.setDot(2,7, 0xFF);
+  matrix.setDot(2,5, 0xFF);
+
+  matrix.setDot(3,7, 0xFF);
+
+  matrix.setDot(4,5, 0xFF);
+  matrix.setDot(4,7, 0xFF);
+
+  matrix.setDot(5,7, 0xFF);
+
+  matrix.setDot(6,7, 0xFF);
+  matrix.setDot(6,5, 0xFF);
+
+  matrix.setDot(7,7, 0xFF);
 
 
 
-  delay(500);
+  delay(2000);
 }
