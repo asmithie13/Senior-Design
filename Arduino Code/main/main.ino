@@ -111,19 +111,23 @@ void updateBoardLEDs(){
   //Iterate through the entire board, setting each piece correctly on the board:
   for(int i=0; i<8; i++){
     for(int j=0; j<8; j++){
+      if(redArray[i][j]=="AA"){
+        continue;
+      }
+
       //Extract the coordinates from each array:
       int redCoordOne, redCoordTwo, blueCoordOne, blueCoordTwo;
       redCoordOne=(redArray[i][j])[0]-'0';
       redCoordTwo=(redArray[i][j])[1]-'0';
       blueCoordOne=(blueArray[i][j])[0]-'0';
-      blueCoordOne=(blueArray[i][j])[1]-'0';
-
+      blueCoordTwo=(blueArray[i][j])[1]-'0';
+      
       //Set the lights the appropriate color:
       if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
         matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
       }
       else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
-        matrix.setDot(blueCoordOne, blueCoordOne, 0xFF);
+        matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
     }
   }
