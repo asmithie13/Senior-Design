@@ -254,6 +254,7 @@ void voiceControlledGame(){
     moveSpace[0]=coordArray[2];
     moveSpace[1]=coordArray[3];
 
+    //If a checker was overtaken, increment the score, and set that checker to zero:
     if(abs(selectedChecker[0]-moveSpace[0])==2){
       if(playerInTurn.playerNum==1){
         playerOneScore++;
@@ -261,6 +262,20 @@ void voiceControlledGame(){
       else{
         playerTwoScore++;
       }
+    }
+
+    //Make the case for each way that the checker could have overtaken:
+    if(selectedChecker[0]-moveSpace[0]>0 && selectedChecker[1]-moveSpace[1]>0){ //Up-left
+      checkerBoard[selectedChecker[0]-1][selectedChecker[1]-1]=0;
+    }
+    else if(selectedChecker[0]-moveSpace[0]<0 && selectedChecker[1]-moveSpace[1]>0){ //Down-left
+      checkerBoard[selectedChecker[0]+1][selectedChecker[1]-1]=0;
+    }
+    else if(selectedChecker[0]-moveSpace[0]>0 && selectedChecker[1]-moveSpace[1]<0){ //Up-right
+      checkerBoard[selectedChecker[0]-1][selectedChecker[1]+1]=0;
+    }
+    else if(selectedChecker[0]-moveSpace[0]<0 && selectedChecker[1]-moveSpace[1]<0){ //Down-right
+      checkerBoard[selectedChecker[0]+1][selectedChecker[1]+1]=0;
     }
 
     //Shut-off the selected checker space:
@@ -285,9 +300,7 @@ void voiceControlledGame(){
       lcd1.print(", ");
       lcd1.print(moveSpace[1]);
       lcd1.print(")");
-      delay(5000);
-
-
+      
       //Alternate player, if no double-jump exists:
       if(coordArray[4]==0){
         playerInTurn.playerNum=2;
@@ -311,7 +324,6 @@ void voiceControlledGame(){
       lcd2.print(", ");
       lcd2.print(moveSpace[1]);
       lcd2.print(")");
-      delay(5000);
 
       //Alternate player, if no double-jump exists:
       if(coordArray[4]==0){
@@ -323,14 +335,15 @@ void voiceControlledGame(){
     myDFPlayer.play(10);
     delay(1500);
     myDFPlayer.play(audioArray[selectedChecker[0]]);
-    delay(1500);
+    delay(1000);
     myDFPlayer.play(audioArray[selectedChecker[1]]);
-    delay(1500);
-    myDFPlayer.play(audioArray[selectedChecker[15]]);
+    delay(1000);
+    myDFPlayer.play(15);
     delay(1500);
     myDFPlayer.play(audioArray[moveSpace[0]]);
-    delay(1500);
+    delay(1000);
     myDFPlayer.play(audioArray[moveSpace[1]]);
+    delay(1000);
 
     //Check to see if a king-space must be awarded:
     checkForKing();
@@ -951,7 +964,7 @@ void moveChecker(){
   myDFPlayer.play(15);
   delay(1500);
   myDFPlayer.play(audioArray[coordOne]);
-  delay(1500);
+  delay(1000);
   myDFPlayer.play(audioArray[coordTwo]);
 
   //Set the spot where the selected checker was to an empty space:
@@ -1023,7 +1036,7 @@ void manualGame(){
     //Display messages based on the player in-turn:
     if(playerInTurn.playerNum==1){
       lcd1.clear();
-      delay(300);
+      delay(500);
       lcd1.print("Selected: (");
       lcd1.print(selectedChecker[0]);
       lcd1.print(", ");
@@ -1032,7 +1045,7 @@ void manualGame(){
     }
     else{
       lcd2.clear();
-      delay(300);
+      delay(500);
       lcd2.print("Selected: (");
       lcd2.print(selectedChecker[0]);
       lcd2.print(", ");
@@ -1044,7 +1057,7 @@ void manualGame(){
     myDFPlayer.play(10);
     delay(1500);
     myDFPlayer.play(audioArray[selectedChecker[0]]);
-    delay(1500);
+    delay(1000);
     myDFPlayer.play(audioArray[selectedChecker[1]]);
 
     //Move the selected checker:
@@ -1121,7 +1134,7 @@ void setup() {
   }
 
   //Set the volume of the DFPlayer:
-  myDFPlayer.volume(25);
+  myDFPlayer.volume(20);
 
   //Initialize LCD display:
   lcd1.init();
@@ -1191,7 +1204,7 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Voice-Controlled");
-    delay(4000);
+    delay(2000);
 
     //Print pre-game messages:
     lcd1.clear();
@@ -1203,7 +1216,7 @@ void loop() {
     myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1211,7 +1224,7 @@ void loop() {
     myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1219,7 +1232,7 @@ void loop() {
     myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1243,7 +1256,7 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Manual");
-    delay(4000);
+    delay(2000);
 
     //DFPlayer:
     myDFPlayer.play(30);
@@ -1271,7 +1284,7 @@ void loop() {
     myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1279,7 +1292,7 @@ void loop() {
     myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1287,7 +1300,7 @@ void loop() {
     myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
