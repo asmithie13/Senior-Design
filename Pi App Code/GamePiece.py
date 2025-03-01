@@ -38,10 +38,9 @@ class MoveSuccess(str, Enum):
     CAPTURE_PIECE = "Piece is overtaken"
     DOUBLE_JUMP = "Piece is overtaken. Must double jump."
     GAME_OVER = "A player has no more pieces to play."
-    # TO DO
-    # TIED_GAME =
-    # BLACK_WINS =
-    # RED_WINS =
+    TIED_GAME = "Game is tied. Black pieces = Red pieces"
+    BLACK_WINS = "Black wins. Black pieces > Red pieces"
+    RED_WINS = "Black wins. Black Red > Black pieces"
 
 class PhoneError(str, Enum):
     DECODE_ERROR = "Failed to decode data sent from phone"

@@ -89,6 +89,7 @@ class GameBoard():
     def handleReset(self):
         self.sendResetToArduino()
         self.__init__()
+        return True, self.returnWinner()
 
     def validateMove(self, move):
         # Out of bounds check
@@ -154,7 +155,7 @@ class GameBoard():
                 self.overtakeMove(move, midPoint)
                 if self.redPieces == 0 or self.blackPieces == 0:
                     self.handleReset()
-                    return True, MoveSuccess.GAME_OVER
+                    return True, self.returnWinner()
                 self.canDoubleJump(move)
 
                 if self.canDoubleJumpFlag:
@@ -247,4 +248,9 @@ class GameBoard():
             self.canDoubleJumpFlag = False
         else:
             self.canDoubleJumpFlag = True
+    
+    def returnWinner(self):
+        if self.blackPieces == self.redPieces: return MoveSuccess.TIED_GAME
+        if self.blackPieces > self.redPieces: return MoveSuccess.BLACK_WINS
+        return MoveSuccess.RED_WINS
   
