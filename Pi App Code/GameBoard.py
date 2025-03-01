@@ -56,7 +56,7 @@ class GameBoard():
     
     def connectArduino(self):
         try:
-            serialObject=serial.Serial("/dev/ttyACM0", 9600, timeout=10)
+            serialObject=serial.Serial("/dev/ttyUSB0", 9600, timeout=10)
             time.sleep(2)
             print("Connection to Arduino successful.")
             return serialObject
@@ -67,9 +67,9 @@ class GameBoard():
             print(f"An unexpected error occurred: {e}")
             return None
         
-    def sendMoveToArduino(self, move):
+    def sendMoveToArduino(self, move, moveType):
         try:
-            tempData = str(move.start[0]) + str(move.start[1]) + str(move.end[0]) + str(move.end[1])
+            tempData = str(move.start[0]) + str(move.start[1]) + str(move.end[0]) + str(move.end[1]) + str(moveType.value)
             self.serialObject.write(tempData.encode())
             return True
         except Exception as e:
@@ -89,6 +89,7 @@ class GameBoard():
     def handleReset(self):
         self.sendResetToArduino()
         self.__init__()
+        return True, self.returnWinner()
 
     def validateMove(self, move):
         # Out of bounds check
@@ -140,7 +141,7 @@ class GameBoard():
         if xDistance == 1:
             self.regularMove(move)
             self.switchPlayers()
-            self.sendMoveToArduino(move)
+            self.sendMoveToArduino(move, MoveType.NON_JUMP_MOVE)
             return True, MoveSuccess.NORMAL_MOVE
         else:
             # One jump case
@@ -154,11 +155,14 @@ class GameBoard():
                 self.overtakeMove(move, midPoint)
                 if self.redPieces == 0 or self.blackPieces == 0:
                     self.handleReset()
-                    return True, MoveSuccess.GAME_OVER
+                    return True, self.returnWinner()
                 self.canDoubleJump(move)
-                self.sendMoveToArduino(move)
+
                 if self.canDoubleJumpFlag:
+                    self.sendMoveToArduino(move, MoveType.JUMP_MOVE)
                     return True, MoveSuccess.DOUBLE_JUMP
+                
+                self.sendMoveToArduino(move, MoveType.NON_JUMP_MOVE)
                 self.switchPlayers()
                 self.canDoubleJumpFlag = False
                 self.doubleJumpNextMoves = []
@@ -244,4 +248,9 @@ class GameBoard():
             self.canDoubleJumpFlag = False
         else:
             self.canDoubleJumpFlag = True
+    
+    def returnWinner(self):
+        if self.blackPieces == self.redPieces: return MoveSuccess.TIED_GAME
+        if self.blackPieces > self.redPieces: return MoveSuccess.BLACK_WINS
+        return MoveSuccess.RED_WINS
   

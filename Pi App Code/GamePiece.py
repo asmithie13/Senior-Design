@@ -15,6 +15,10 @@ class Player(Enum):
     BLACK = 1
     RED = 2
 
+class MoveType(Enum):
+    NON_JUMP_MOVE = 0
+    JUMP_MOVE = 1
+
 class MoveError(str, Enum):
     START_OUT_OF_BOUNDS = "Invalid move: Start position out of bounds."
     END_OUT_OF_BOUNDS = "Invalid move: End position out of bounds."
@@ -34,3 +38,10 @@ class MoveSuccess(str, Enum):
     CAPTURE_PIECE = "Piece is overtaken"
     DOUBLE_JUMP = "Piece is overtaken. Must double jump."
     GAME_OVER = "A player has no more pieces to play."
+    TIED_GAME = "Game is tied. Black pieces = Red pieces"
+    BLACK_WINS = "Black wins. Black pieces > Red pieces"
+    RED_WINS = "Black wins. Black Red > Black pieces"
+
+class PhoneError(str, Enum):
+    DECODE_ERROR = "Failed to decode data sent from phone"
+    INVALID_SIGNAL = "Signal received is not valid for reset or move"
