@@ -6,6 +6,8 @@
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
 #include <DFRobotDFPlayerMini.h>
+#include <MaxMatrix.h>
+#include <Adafruit_NeoPixel.h>
 
 //Struct to declare players:
 struct Player{
@@ -60,39 +62,105 @@ int playerTwoScore=0;
 //Flag to determine if the reset signal was received when playing in manual mode:
 bool resetSig;
 
-//Initialize arrays for sending signals to LED checkerboard:
-//For rows, row #0 should correspond to pin #2 on the Arduino, row #1= pin #3, etc.:
-int rowVal[8]={2, 3, 4, 5, 6, 7, 8, 9};
-
-//For columns, column #0=pins 38 and 39, depending on the desired color, etc.:
-int colVal[8][2]=
-{
-  {38, 39},
-  {40, 41},
-  {42, 43},
-  {44, 45},
+//Initialize two arrays that hold the coordinates that must be called...
+//...to set the checker at each corresponding index to a certain color:
+String redArray[8][8]{
+  {"AA", "10", "AA", "30", "AA", "50", "AA", "70"},
+  {"00", "AA", "20", "AA", "40", "AA", "60", "AA"},
+  {"AA", "12", "AA", "32", "AA", "52", "AA", "72"},
+  {"02", "AA", "22", "AA", "42", "AA", "62", "AA"},
+  {"AA", "14", "AA", "34", "AA", "54", "AA", "74"},
+  {"04", "AA", "24", "AA", "44", "AA", "64", "AA"},
+  {"AA", "16", "AA", "36", "AA", "56", "AA", "76"},
+  {"06", "AA", "26", "AA", "46", "AA", "66", "AA"}
+};
+String blueArray[8][8]{
+  {"AA", "11", "AA", "31", "AA", "51", "AA", "71"},
+  {"01", "AA", "21", "AA", "41", "AA", "61", "AA"},
+  {"AA", "13", "AA", "33", "AA", "53", "AA", "73"},
+  {"03", "AA", "23", "AA", "43", "AA", "63", "AA"},
+  {"AA", "15", "AA", "35", "AA", "55", "AA", "75"},
+  {"05", "AA", "25", "AA", "45", "AA", "65", "AA"},
+  {"AA", "17", "AA", "37", "AA", "57", "AA", "77"},
+  {"07", "AA", "27", "AA", "47", "AA", "67", "AA"}
 };
 
-//Function to initialize each LED pin as an output, and set all to LOW:
-void setLEDPins(){
-  //First, initialize all row LEDs:
-  for(int i=0; i<8; i++){
-    pinMode(rowVal[i], OUTPUT);
-    digitalWrite(rowVal[i], LOW);
-  }
+//Initialize the matrix:
+MaxMatrix matrix(11, 10, 13, 1);
 
-  //Then, intialize all columns:
-  for(int i=0; i<4; i++){
-    for(int j=0; j<2; j++){
-      pinMode(colVal[i][j], OUTPUT);
-      digitalWrite(colVal[i][j], LOW);
-    }
-  }
-}
+//Initialize the LED matrix:
+Adafruit_NeoPixel strip(64, 6, NEO_GRB + NEO_KHZ800);
+
+//Array to accurately index the LED matrix:
+int LEDMatrix[8][8]={
+  {63, 62, 61, 60, 59, 58, 57, 56},
+  {48, 49, 50, 51, 52, 53, 54, 55},
+  {47, 46, 45, 44, 43, 42, 41, 40},
+  {32, 33, 34, 35, 36, 37, 38, 39},
+  {31, 30, 29, 28, 27, 26, 25, 24},
+  {16, 17, 18, 19, 20, 21, 22, 23},
+  {15, 14, 13, 12, 11, 10, 9, 8},
+  {0, 1, 2, 3, 4, 5, 6, 7}
+};
 
 //Function to update LED board based on checker positions:
 void updateBoardLEDs(){
-  //Function will be populated when a concrete plan for displaying the LED matrix gas been constructed
+  //Clear the matrix:
+  matrix.clear();
+
+  //Iterate through the entire board, setting each piece correctly on the board:
+  for(int i=0; i<8; i++){
+    for(int j=0; j<8; j++){
+      if(redArray[i][j]=="AA"){
+        continue;
+      }
+
+      //Extract the coordinates from each array:
+      int redCoordOne, redCoordTwo, blueCoordOne, blueCoordTwo;
+      redCoordOne=(redArray[i][j])[0]-'0';
+      redCoordTwo=(redArray[i][j])[1]-'0';
+      blueCoordOne=(blueArray[i][j])[0]-'0';
+      blueCoordTwo=(blueArray[i][j])[1]-'0';
+      
+      //Set the lights the appropriate color:
+      if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
+        matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
+      }
+      else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
+        matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
+      }
+    }
+  }
+
+  //Clear all LEDs:
+  strip.fill(strip.Color(0, 0, 0));
+
+  //Set the correct LEDs:
+  for(int i=0; i<8; i++){
+    for(int j=0; j<8; j++){
+      //Turn spaces off that hold no checkers:
+      if(checkerBoard[i][j]==0){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 0));
+      }
+      //Set red checkers:
+      else if(checkerBoard[i][j]==1){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(10, 0, 0));
+      }
+      else if(checkerBoard[i][j]==3){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(80, 0, 0));
+      }
+      //Set blue checkers:
+      else if(checkerBoard[i][j]==2){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 10));
+      }
+      else if(checkerBoard[i][j]==4){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 80));
+      }
+    }
+  }
+
+  //Update the strip:
+  strip.show();
 }
 
 //Wait for user keypad input:
@@ -254,6 +322,7 @@ void voiceControlledGame(){
     moveSpace[0]=coordArray[2];
     moveSpace[1]=coordArray[3];
 
+    //If a checker was overtaken, increment the score, and set that checker to zero:
     if(abs(selectedChecker[0]-moveSpace[0])==2){
       if(playerInTurn.playerNum==1){
         playerOneScore++;
@@ -261,6 +330,20 @@ void voiceControlledGame(){
       else{
         playerTwoScore++;
       }
+    }
+
+    //Make the case for each way that the checker could have overtaken:
+    if(selectedChecker[0]-moveSpace[0]>0 && selectedChecker[1]-moveSpace[1]>0){ //Up-left
+      checkerBoard[selectedChecker[0]-1][selectedChecker[1]-1]=0;
+    }
+    else if(selectedChecker[0]-moveSpace[0]<0 && selectedChecker[1]-moveSpace[1]>0){ //Down-left
+      checkerBoard[selectedChecker[0]+1][selectedChecker[1]-1]=0;
+    }
+    else if(selectedChecker[0]-moveSpace[0]>0 && selectedChecker[1]-moveSpace[1]<0){ //Up-right
+      checkerBoard[selectedChecker[0]-1][selectedChecker[1]+1]=0;
+    }
+    else if(selectedChecker[0]-moveSpace[0]<0 && selectedChecker[1]-moveSpace[1]<0){ //Down-right
+      checkerBoard[selectedChecker[0]+1][selectedChecker[1]+1]=0;
     }
 
     //Shut-off the selected checker space:
@@ -285,9 +368,7 @@ void voiceControlledGame(){
       lcd1.print(", ");
       lcd1.print(moveSpace[1]);
       lcd1.print(")");
-      delay(5000);
-
-
+      
       //Alternate player, if no double-jump exists:
       if(coordArray[4]==0){
         playerInTurn.playerNum=2;
@@ -311,7 +392,6 @@ void voiceControlledGame(){
       lcd2.print(", ");
       lcd2.print(moveSpace[1]);
       lcd2.print(")");
-      delay(5000);
 
       //Alternate player, if no double-jump exists:
       if(coordArray[4]==0){
@@ -323,20 +403,24 @@ void voiceControlledGame(){
     myDFPlayer.play(10);
     delay(1500);
     myDFPlayer.play(audioArray[selectedChecker[0]]);
-    delay(1500);
+    delay(1000);
     myDFPlayer.play(audioArray[selectedChecker[1]]);
-    delay(1500);
-    myDFPlayer.play(audioArray[selectedChecker[15]]);
+    delay(1000);
+    myDFPlayer.play(15);
     delay(1500);
     myDFPlayer.play(audioArray[moveSpace[0]]);
-    delay(1500);
+    delay(1000);
     myDFPlayer.play(audioArray[moveSpace[1]]);
+    delay(1000);
 
     //Check to see if a king-space must be awarded:
     checkForKing();
 
     //Show the board configuration:
     testBoardConfig();
+
+    //Update LED matrix:
+    updateBoardLEDs();
   }
 }
 
@@ -951,7 +1035,7 @@ void moveChecker(){
   myDFPlayer.play(15);
   delay(1500);
   myDFPlayer.play(audioArray[coordOne]);
-  delay(1500);
+  delay(1000);
   myDFPlayer.play(audioArray[coordTwo]);
 
   //Set the spot where the selected checker was to an empty space:
@@ -1023,7 +1107,7 @@ void manualGame(){
     //Display messages based on the player in-turn:
     if(playerInTurn.playerNum==1){
       lcd1.clear();
-      delay(300);
+      delay(500);
       lcd1.print("Selected: (");
       lcd1.print(selectedChecker[0]);
       lcd1.print(", ");
@@ -1032,7 +1116,7 @@ void manualGame(){
     }
     else{
       lcd2.clear();
-      delay(300);
+      delay(500);
       lcd2.print("Selected: (");
       lcd2.print(selectedChecker[0]);
       lcd2.print(", ");
@@ -1044,7 +1128,7 @@ void manualGame(){
     myDFPlayer.play(10);
     delay(1500);
     myDFPlayer.play(audioArray[selectedChecker[0]]);
-    delay(1500);
+    delay(1000);
     myDFPlayer.play(audioArray[selectedChecker[1]]);
 
     //Move the selected checker:
@@ -1060,6 +1144,9 @@ void manualGame(){
 
     //TEST:
     testBoardConfig();
+
+    //Update LED matrix:
+    updateBoardLEDs();
 
     //Change the player in-turn:
     if(playerInTurn.playerNum==1){
@@ -1121,7 +1208,7 @@ void setup() {
   }
 
   //Set the volume of the DFPlayer:
-  myDFPlayer.volume(25);
+  myDFPlayer.volume(20);
 
   //Initialize LCD display:
   lcd1.init();
@@ -1131,8 +1218,13 @@ void setup() {
   lcd2.init();
   lcd2.backlight();
 
-  //Initialize all used LED pins as output:
-  setLEDPins();
+  //Initialize the MAX7219:
+  matrix.init();
+  matrix.setIntensity(8);  //Set brightness
+
+  //Initialize the LED array:
+  strip.begin();  
+  strip.show(); 
 }
 
 //Begin the game:
@@ -1145,6 +1237,9 @@ void loop() {
 
   //TEST:
   testBoardConfig();
+  
+  //Update LED matrix:
+  updateBoardLEDs();
 
   //Reset player scores:
   playerOneScore=0;
@@ -1191,7 +1286,7 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Voice-Controlled");
-    delay(4000);
+    delay(2000);
 
     //Print pre-game messages:
     lcd1.clear();
@@ -1203,7 +1298,7 @@ void loop() {
     myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1211,7 +1306,7 @@ void loop() {
     myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1219,7 +1314,7 @@ void loop() {
     myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1243,7 +1338,7 @@ void loop() {
     lcd2.print("Selected:");
     lcd2.setCursor(0, 1);
     lcd2.print("Manual");
-    delay(4000);
+    delay(2000);
 
     //DFPlayer:
     myDFPlayer.play(30);
@@ -1271,7 +1366,7 @@ void loop() {
     myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1279,7 +1374,7 @@ void loop() {
     myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
@@ -1287,7 +1382,7 @@ void loop() {
     myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
-    delay(1500);
+    delay(1000);
     lcd1.clear();
     lcd2.clear();
 
