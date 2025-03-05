@@ -1,4 +1,3 @@
-import requests
 from flask import Flask, request, jsonify
 from Objects.GameBoard import *
 from Objects.GamePiece import *
