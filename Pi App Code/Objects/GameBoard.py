@@ -1,6 +1,8 @@
 import serial
 import time
-from GamePiece import *
+from Objects.GamePiece import *
+from Objects.enums import *
+
 class GameBoard():
     def __init__(self):
         # Bluetooth object to Arduino

@@ -1,7 +1,8 @@
 import requests
 from flask import Flask, request, jsonify
-from GameBoard import *
-from GamePiece import *
+from Objects.GameBoard import *
+from Objects.GamePiece import *
+from Objects.enums import *
 
 class Backend:
     def __init__(self):
