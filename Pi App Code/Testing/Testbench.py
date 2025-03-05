@@ -1,6 +1,9 @@
 import numpy as np
-from GameBoard import *
-from GamePiece import *
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from Objects.GameBoard import *
+from Objects.GamePiece import *
 
 def fillVisual(gb, visArr):
     for i in range(8):

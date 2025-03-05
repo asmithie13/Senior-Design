@@ -1,23 +1,12 @@
 from enum import Enum
 
-class GamePiece():
-    def __init__(self, player, location):
-        self.player = player
-        self.location = location
-        self.isKing = False
-
-class Move():
-    def __init__(self, start, end):
-        self.start = start
-        self.end = end
-
 class Player(Enum):
     BLACK = 1
     RED = 2
 
 class MoveType(Enum):
-    NON_JUMP_MOVE = 0
-    JUMP_MOVE = 1
+    NON_DOUBLE_JUMP_MOVE = 0
+    DOUBLE_JUMP_MOVE = 1
 
 class MoveError(str, Enum):
     START_OUT_OF_BOUNDS = "Invalid move: Start position out of bounds."

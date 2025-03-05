@@ -1,26 +1,17 @@
 import serial
 import time
-from GamePiece import *
+from Objects.GamePiece import *
+from Objects.enums import *
+
 class GameBoard():
     def __init__(self):
-        # Bluetooth object to Arduino
-        self.serialObject = self.connectArduino()
-        # Overide object for testing
-        #self.overideBTA = True
-        # Fill the tiles
-        self.tiles = [[None] * 8 for _ in range(8)]
-        # black pieces always move first
-        self.currentPlayer = Player.BLACK
-
-        # pieces totals
-        self.redPieces = 12
-        self.blackPieces = 12
-
-        # bool to track if double jump is possinle
-        self.canDoubleJumpFlag = False
-
-        # moves that need to be selected if there is a valid double jump
-        self.doubleJumpNextMoves = []
+        self.serialObject = self.connectArduino()   # Bluetooth object to Arduino
+        self.tiles = [[None] * 8 for _ in range(8)] # Fill the tiles
+        self.currentPlayer = Player.BLACK   # black pieces always move first
+        self.redPieces = 12 # red pieces totals
+        self.blackPieces = 12   # black pieces totals
+        self.canDoubleJumpFlag = False  # bool to track if double jump is possinle
+        self.doubleJumpNextMoves = []   # moves that need to be selected if there is a valid double jump
 
         # initialize all orginal pieces
         gamePieces = [
@@ -141,32 +132,34 @@ class GameBoard():
         if xDistance == 1:
             self.regularMove(move)
             self.switchPlayers()
-            self.sendMoveToArduino(move, MoveType.NON_JUMP_MOVE)
+            self.sendMoveToArduino(move, MoveType.NON_DOUBLE_JUMP_MOVE)
             return True, MoveSuccess.NORMAL_MOVE
-        else:
-            # One jump case
-            midPoint = self.returnMidpoint(move)
-            
-            if self.tiles[midPoint[0]][midPoint[1]] is None:
-                return False, MoveError.NO_PIECE_TO_CAPTURE
-            elif self.tiles[midPoint[0]][midPoint[1]].player == self.currentPlayer:
-                return False, MoveError.FRIENDLY_FIRE
-            else:
-                self.overtakeMove(move, midPoint)
-                if self.redPieces == 0 or self.blackPieces == 0:
-                    self.handleReset()
-                    return True, self.returnWinner()
-                self.canDoubleJump(move)
+    
+        # One jump case
+        midPoint = self.returnMidpoint(move)
+        
+        if self.tiles[midPoint[0]][midPoint[1]] is None:
+            return False, MoveError.NO_PIECE_TO_CAPTURE
+        elif self.tiles[midPoint[0]][midPoint[1]].player == self.currentPlayer:
+            return False, MoveError.FRIENDLY_FIRE
 
-                if self.canDoubleJumpFlag:
-                    self.sendMoveToArduino(move, MoveType.JUMP_MOVE)
-                    return True, MoveSuccess.DOUBLE_JUMP
-                
-                self.sendMoveToArduino(move, MoveType.NON_JUMP_MOVE)
-                self.switchPlayers()
-                self.canDoubleJumpFlag = False
-                self.doubleJumpNextMoves = []
-                return True, MoveSuccess.CAPTURE_PIECE
+        # Over take piece
+        self.overtakeMove(move, midPoint)
+        if self.redPieces == 0 or self.blackPieces == 0:
+            self.handleReset()
+            return True, self.returnWinner()
+        
+        # Check double jump
+        self.canDoubleJump(move)
+        if self.canDoubleJumpFlag:
+            self.sendMoveToArduino(move, MoveType.DOUBLE_JUMP_MOVE)
+            return True, MoveSuccess.DOUBLE_JUMP
+        
+        self.sendMoveToArduino(move, MoveType.NON_DOUBLE_JUMP_MOVE)
+        self.switchPlayers()
+        self.canDoubleJumpFlag = False
+        self.doubleJumpNextMoves = []
+        return True, MoveSuccess.CAPTURE_PIECE
 
 
     def regularMove(self, move):

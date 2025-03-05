@@ -1,6 +1,10 @@
 import unittest
-from GameBoard import *
-from GamePiece import *
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from Objects.GameBoard import *
+from Objects.GamePiece import *
+from Objects.enums import *
 
 class TestGameBoard(unittest.TestCase):
     
