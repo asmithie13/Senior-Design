@@ -1,7 +1,7 @@
-import requests
 from flask import Flask, request, jsonify
-from GameBoard import *
-from GamePiece import *
+from Objects.GameBoard import *
+from Objects.GamePiece import *
+from Objects.enums import *
 
 class Backend:
     def __init__(self):
@@ -27,10 +27,15 @@ class Backend:
             # Reset case
             if data == "*":
                 print("Reset Signal Sent")
-                self.gb.handleReset()
-                # TODO
-                # DO YOU WANT ME TO TELL YOU I RECEIVED THE RESET??
-                return
+                result = self.gb.handleReset()
+                print(result[0])
+                print(result[1].value)
+
+                response = {
+                'status': result[0],
+                'message': result[1]
+                }
+                return jsonify(response)
             
             # Normal move case
             try:
