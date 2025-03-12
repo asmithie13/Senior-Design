@@ -248,33 +248,24 @@ void winSequence(){
 
 //Receive coordinates, or reset signal, from the Raspberry Pi:
 int* getPiCoordinates(int* coordArray) {
-  //Wait for Serial data from the Raspberry Pi:
+  //Initialize a variable to count the serial data received:
+  int i=0;
+
+  //Wait for serial data to be sent from the Raspberry Pi:
   while(1){
     //If serial data has been received:
     if(Serial1.available()){
-      //Read data, and convert each character in the string to an integer:
-      String data=Serial1.readStringUntil('\n');
+      //Iterate through data until all five characters are gathered:
+      char tempChar=Serial1.read();
+      coordArray[i]=tempChar-'0';
+      i++;
+      Serial.print(i);
 
-      //Iterate through the string:
-      for(int i=0; i<5; i++){
-        //If the reset signal is received, break from the loop:
-        if(coordArray[i]=='*'){
-          resetSig=true;
-          lcd1.clear();
-          lcd2.clear();
-          lcd1.print("Reset received.");
-          lcd2.print("Reset received.");
-          delay(2000);
-          return;
-        }
-        //Otherwise, append the integer to the data array:
-        else{
-          coordArray[i]=data[i]-'0';
-        }
+      //If all five characters for a move are received, break from the loop:
+      if(i==5){
+        break;
       }
-
-      //If serial data was received successfully, break from the loop:
-      break;
+      
     }
   }
 }
@@ -375,6 +366,7 @@ void voiceControlledGame(){
       }
     }
     else{
+      Serial.print("SET PLAYER 2 CHIP");
       //Set the move space:
       checkerBoard[moveSpace[0]][moveSpace[1]]=2;
 
@@ -418,7 +410,7 @@ void voiceControlledGame(){
 
     //Show the board configuration:
     testBoardConfig();
-
+    
     //Update LED matrix:
     updateBoardLEDs();
   }
