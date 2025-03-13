@@ -11,6 +11,12 @@ class Frontend(QMainWindow):
         self.backend = Backend()
         self.backendThread = FlaskThread(self.backend)
         self.backendThread.start()
+    
+        self.backend.latestMove.connect(self.update_label)
+    
+    def updateLabel(self, text):
+        """Slot that updates the label with received data."""
+        print(text)
  
 if __name__ == "__main__":
     app = QApplication(sys.argv)
