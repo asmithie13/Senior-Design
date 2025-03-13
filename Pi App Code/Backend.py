@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from Objects.GameBoard import *
 from Objects.GamePiece import *
 from Objects.enums import *
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, QThread
 
 class Backend:
     def __init__(self):
@@ -62,6 +62,14 @@ class Backend:
 
     def run(self, host='0.0.0.0', port=5000):
         self.app.run(host=host, port=port)
+
+class FlaskThread(QThread):
+    def __init__(self, backend):
+        super().__init__()
+        self.backend = backend
+
+    def run(self):
+        self.backend.app.run()
 
 if __name__ == "__main__":
     backend = Backend()
