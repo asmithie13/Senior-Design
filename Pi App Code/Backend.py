@@ -4,11 +4,13 @@ from Objects.GamePiece import *
 from Objects.enums import *
 from PyQt6.QtCore import QObject, pyqtSignal, QThread
 
-class Backend:
+class Backend(QObject):
+    latestMove = pyqtSignal(str)
+
     def __init__(self):
+        super().__init__()
         self.app = Flask(__name__)
         self.gb = GameBoard()
-        self.latestMove = pyqtSignal(str)
         self._registerRoutes()
 
     def _registerRoutes(self):
@@ -61,7 +63,7 @@ class Backend:
             
 
     def run(self, host='0.0.0.0', port=5000):
-        self.app.run(host=host, port=port)
+        self.app.run(host=host, port=port, theaded=True)
 
 class FlaskThread(QThread):
     def __init__(self, backend):
