@@ -2,9 +2,15 @@ from flask import Flask, request, jsonify
 from Objects.GameBoard import *
 from Objects.GamePiece import *
 from Objects.enums import *
+from PyQt6.QtCore import QObject, pyqtSignal, QThread
+from PyQt6.QtWidgets import QApplication 
+import sys
 
-class Backend:
+class Backend(QObject):
+    latestMove = pyqtSignal(str)
+
     def __init__(self):
+        super().__init__()
         self.app = Flask(__name__)
         self.gb = GameBoard()
         self._registerRoutes()
@@ -40,6 +46,7 @@ class Backend:
             # Normal move case
             try:
                 result = self.gb.validateMove(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                self.latestMove.emit(data)
                 print(result[0])
                 print(result[1].value)
                 response = {
@@ -56,10 +63,17 @@ class Backend:
                 }
                 return jsonify(response)
             
+class FlaskThread(QThread):
+    def __init__(self, backend):
+        super().__init__()
+        self.backend = backend
 
-    def run(self, host='0.0.0.0', port=5000):
-        self.app.run(host=host, port=port)
+    def run(self):
+        self.backend.app.run(host='0.0.0.0', port=5000, threaded=True) 
 
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
     backend = Backend()
-    backend.run()
+    flaskThread = FlaskThread(backend)
+    flaskThread.start()
+    sys.exit(app.exec())
