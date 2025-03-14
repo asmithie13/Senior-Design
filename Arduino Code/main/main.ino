@@ -104,7 +104,7 @@ int LEDMatrix[8][8]={
 };
 
 //Function to update LED board based on checker positions:
-void updateBoardLEDs(){
+void updateBoardLEDs(refMatrix){
   //Clear the matrix:
   matrix.clear();
 
@@ -123,15 +123,21 @@ void updateBoardLEDs(){
       blueCoordTwo=(blueArray[i][j])[1]-'0';
       
       //Set the lights the appropriate color:
-      if(checkerBoard[i][j]==1 || checkerBoard[i][j]==3){
+      if(refMatrix[i][j]==1 || refMatrix[i][j]==3){
         matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
       }
-      else if(checkerBoard[i][j]==2 || checkerBoard[i][j]==4){
+      else if(refMatrix[i][j]==2 || refMatrix[i][j]==4){
+        matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
+      }
+      //Set king pieces to purple:
+      else{
+        matrix.setDot(redCoordOne, blueCoordTwo, 0xFF);
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
     }
   }
 
+  /*
   //Clear all LEDs:
   strip.fill(strip.Color(0, 0, 0));
 
@@ -160,7 +166,7 @@ void updateBoardLEDs(){
   }
 
   //Update the strip:
-  strip.show();
+  strip.show();*/
 }
 
 //Wait for user keypad input:
@@ -419,7 +425,7 @@ void voiceControlledGame(){
     testBoardConfig();
     
     //Update LED matrix:
-    updateBoardLEDs();
+    updateBoardLEDs(checkerBoard);
   }
 }
 
@@ -1145,7 +1151,7 @@ void manualGame(){
     testBoardConfig();
 
     //Update LED matrix:
-    updateBoardLEDs();
+    updateBoardLEDs(checkerBoard);
 
     //Change the player in-turn:
     if(playerInTurn.playerNum==1){
@@ -1165,7 +1171,7 @@ void manualGame(){
     }
 
     //If there isn't a winner, update the LED board accordingly:
-    updateBoardLEDs();
+    updateBoardLEDs(checkerBoard);
   }
 }
 
@@ -1232,13 +1238,10 @@ void loop() {
   initializeBoard();
 
   //Initialize the LED matrix:
-  updateBoardLEDs();
+  updateBoardLEDs(checkerBoard);
 
   //TEST:
   testBoardConfig();
-  
-  //Update LED matrix:
-  updateBoardLEDs();
 
   //Reset player scores:
   playerOneScore=0;
