@@ -240,8 +240,6 @@ void winSequence(){
     myDFPlayer.play(20);
   }
 
-  //[ADD LED PATTERN THAT INDICATES WIN]
-
   //Add short delay:
   delay(2000);
 }
@@ -258,14 +256,24 @@ int* getPiCoordinates(int* coordArray) {
       //Iterate through data until all five characters are gathered:
       char tempChar=Serial1.read();
       coordArray[i]=tempChar-'0';
+
+      //Increment the counter:
       i++;
+
+      //Print the number of coordinates received:
+      Serial.print("\nValues received: ");
       Serial.print(i);
+
+      //If the reset signal is received, set the signal, and break from the loop:
+      if(tempChar=='*'){
+        resetSig=true;
+        break;
+      }
 
       //If all five characters for a move are received, break from the loop:
       if(i==5){
         break;
       }
-      
     }
   }
 }
@@ -366,7 +374,6 @@ void voiceControlledGame(){
       }
     }
     else{
-      Serial.print("SET PLAYER 2 CHIP");
       //Set the move space:
       checkerBoard[moveSpace[0]][moveSpace[1]]=2;
 
