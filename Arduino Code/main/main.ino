@@ -104,7 +104,7 @@ int LEDMatrix[8][8]={
 };
 
 //Function to update LED board based on checker positions:
-void updateBoardLEDs(refMatrix){
+void updateBoardLEDs(int refMatrix[8][8]){
   //Clear the matrix:
   matrix.clear();
 
@@ -123,10 +123,10 @@ void updateBoardLEDs(refMatrix){
       blueCoordTwo=(blueArray[i][j])[1]-'0';
       
       //Set the lights the appropriate color:
-      if(refMatrix[i][j]==1 || refMatrix[i][j]==3){
+      if(refMatrix[i][j]==1){
         matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
       }
-      else if(refMatrix[i][j]==2 || refMatrix[i][j]==4){
+      else if(refMatrix[i][j]==2){
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
       //Set king pieces to purple:
@@ -137,36 +137,8 @@ void updateBoardLEDs(refMatrix){
     }
   }
 
-  /*
-  //Clear all LEDs:
-  strip.fill(strip.Color(0, 0, 0));
-
-  //Set the correct LEDs:
-  for(int i=0; i<8; i++){
-    for(int j=0; j<8; j++){
-      //Turn spaces off that hold no checkers:
-      if(checkerBoard[i][j]==0){
-        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 0));
-      }
-      //Set red checkers:
-      else if(checkerBoard[i][j]==1){
-        strip.setPixelColor(LEDMatrix[i][j], strip.Color(10, 0, 0));
-      }
-      else if(checkerBoard[i][j]==3){
-        strip.setPixelColor(LEDMatrix[i][j], strip.Color(80, 0, 0));
-      }
-      //Set blue checkers:
-      else if(checkerBoard[i][j]==2){
-        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 10));
-      }
-      else if(checkerBoard[i][j]==4){
-        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 80));
-      }
-    }
-  }
-
-  //Update the strip:
-  strip.show();*/
+  //Print the pattern displayed to the LED matrix:
+  testBoardConfig(refMatrix);
 }
 
 //Wait for user keypad input:
@@ -421,25 +393,22 @@ void voiceControlledGame(){
     //Check to see if a king-space must be awarded:
     checkForKing();
 
-    //Show the board configuration:
-    testBoardConfig();
-    
     //Update LED matrix:
     updateBoardLEDs(checkerBoard);
   }
 }
 
 //Function for testing that prints the configuration of the board after each move:
-void testBoardConfig(){
+void testBoardConfig(int testBoard[8][8]){
   Serial.print("\nBoard Configuration:");
   for(int i=0; i<8; i++){
     Serial.print("\n");
     for(int j=0; j<8; j++){
-      Serial.print(checkerBoard[i][j]);
+      Serial.print(testBoard[i][j]);
     }
   }
 
-  //TEST:
+  //Print print each player's score to the terminal:
   Serial.print("\nPlayer #1 Score: ");
   Serial.print(playerOneScore);
   Serial.print("\nPlayer #2 Score: ");
@@ -629,7 +598,7 @@ void selectChecker(){
   selectedChecker[0]=coordOne;
   selectedChecker[1]=coordTwo;
 
-  //TEST:
+  //Print the selected checker coordinates:
   Serial.print("\nThe selected checker is:\n");
   Serial.print(coordOne);
   Serial.print(coordTwo);
@@ -1147,12 +1116,6 @@ void manualGame(){
     //Check after the move to see if any king pieces need to be set:
     checkForKing();
 
-    //TEST:
-    testBoardConfig();
-
-    //Update LED matrix:
-    updateBoardLEDs(checkerBoard);
-
     //Change the player in-turn:
     if(playerInTurn.playerNum==1){
       playerInTurn.playerNum=2;
@@ -1200,7 +1163,7 @@ void stubManualMode(){
 
 //Set-up the program:
 void setup() {
-  //TEST:
+  //Initialize the primary serial port to print results for testing:
   Serial.begin(9600);
 
   //Initialize serial communication with the Raspberry Pi:
@@ -1239,9 +1202,6 @@ void loop() {
 
   //Initialize the LED matrix:
   updateBoardLEDs(checkerBoard);
-
-  //TEST:
-  testBoardConfig();
 
   //Reset player scores:
   playerOneScore=0;
@@ -1397,7 +1357,7 @@ void loop() {
     //Enter the manual game:
     manualGame();
 
-    //TEST:
+    //Stub game to test manual operation:
     //stubManualMode();
   }
 
