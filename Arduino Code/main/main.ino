@@ -1197,11 +1197,21 @@ void setup() {
 
 //Begin the game:
 void loop() {
-  //Initialize the board (same for both game modes):
-  initializeBoard();
+  //Initial pattern to be displayed on the LED matrix:
+  int initialMessage[8][8]={{1, 1, 1, 1, 1, 1, 1, 1},
+                      {1, 0, 0, 0, 0, 0, 0, 1},
+                      {1, 0, 2, 2, 2, 2, 0, 1},
+                      {1, 0, 2, 0, 0, 2, 0, 1},
+                      {1, 0, 2, 0, 0, 2, 0, 1},
+                      {1, 0, 2, 2, 2, 2, 0, 1},
+                      {1, 0, 0, 0, 0, 0, 0, 1},
+                      {1, 1, 1, 1, 1, 1, 1, 1}};
 
   //Initialize the LED matrix:
-  updateBoardLEDs(checkerBoard);
+  updateBoardLEDs(initialMessage);
+
+  //Initialize the board (same for both game modes):
+  initializeBoard();
 
   //Reset player scores:
   playerOneScore=0;
@@ -1255,6 +1265,19 @@ void loop() {
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
+    
+    //Initial pattern to be displayed on the LED matrix:
+    int threeMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 3, 0, 3, 3, 0, 0},
+                        {0, 3, 0, 0, 0, 0, 3, 0},
+                        {0, 3, 0, 0, 0, 0, 3, 0},
+                        {0, 3, 0, 0, 3, 0, 3, 0},
+                        {0, 0, 3, 3, 0, 3, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+    //Update the LED matrix:
+    updateBoardLEDs(threeMessage);
 
     //DFPlayer:
     myDFPlayer.play(5);
@@ -1264,6 +1287,19 @@ void loop() {
     lcd1.clear();
     lcd2.clear();
 
+    //Initial pattern to be displayed on the LED matrix:
+    int twoMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 2, 0, 0, 2, 2, 0, 0},
+                        {0, 2, 0, 0, 0, 0, 2, 0},
+                        {0, 2, 2, 0, 0, 0, 2, 0},
+                        {0, 2, 0, 2, 0, 0, 2, 0},
+                        {0, 2, 0, 0, 2, 2, 0, 0},
+                        {0, 2, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+    //Update the LED matrix:
+    updateBoardLEDs(twoMessage);
+
     //DFPlayer:
     myDFPlayer.play(4);
     lcd1.print("2");
@@ -1272,6 +1308,19 @@ void loop() {
     lcd1.clear();
     lcd2.clear();
 
+    //Initial pattern to be displayed on the LED matrix:
+    int oneMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 1, 0, 0, 1, 0, 0, 0},
+                        {0, 1, 0, 0, 0, 1, 0, 0},
+                        {0, 1, 1, 1, 1, 1, 1, 0},
+                        {0, 1, 0, 0, 0, 0, 0, 0},
+                        {0, 1, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+    //Update the LED matrix:
+    updateBoardLEDs(oneMessage);
+
     //DFPlayer:
     myDFPlayer.play(14);
     lcd1.print("1");
@@ -1279,6 +1328,9 @@ void loop() {
     delay(1000);
     lcd1.clear();
     lcd2.clear();
+
+    //Update the LED matrix:
+    updateBoardLEDs(checkerBoard);
 
     //DFPlayer:
     myDFPlayer.play(19);
@@ -1324,6 +1376,19 @@ void loop() {
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
 
+    //Initial pattern to be displayed on the LED matrix:
+    int threeMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 3, 0, 3, 3, 0, 0},
+                        {0, 3, 0, 0, 0, 0, 3, 0},
+                        {0, 3, 0, 0, 0, 0, 3, 0},
+                        {0, 3, 0, 0, 3, 0, 3, 0},
+                        {0, 0, 3, 3, 0, 3, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+    //Update the LED matrix:
+    updateBoardLEDs(threeMessage);
+    
     //DFPlayer:
     myDFPlayer.play(5);
     lcd1.print("3");
@@ -1332,6 +1397,19 @@ void loop() {
     lcd1.clear();
     lcd2.clear();
 
+    //Initial pattern to be displayed on the LED matrix:
+    int twoMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 2, 0, 0, 2, 2, 0, 0},
+                        {0, 2, 0, 0, 0, 0, 2, 0},
+                        {0, 2, 2, 0, 0, 0, 2, 0},
+                        {0, 2, 0, 2, 0, 0, 2, 0},
+                        {0, 2, 0, 0, 2, 2, 0, 0},
+                        {0, 2, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+    //Update the LED matrix:
+    updateBoardLEDs(twoMessage);
+
     //DFPlayer:
     myDFPlayer.play(4);
     lcd1.print("2");
@@ -1339,6 +1417,19 @@ void loop() {
     delay(1000);
     lcd1.clear();
     lcd2.clear();
+    
+    //Initial pattern to be displayed on the LED matrix:
+    int oneMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0},
+                        {0, 1, 0, 0, 1, 0, 0, 0},
+                        {0, 1, 0, 0, 0, 1, 0, 0},
+                        {0, 1, 1, 1, 1, 1, 1, 0},
+                        {0, 1, 0, 0, 0, 0, 0, 0},
+                        {0, 1, 0, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+    //Update the LED matrix:
+    updateBoardLEDs(oneMessage);
 
     //DFPlayer:
     myDFPlayer.play(14);
@@ -1347,6 +1438,9 @@ void loop() {
     delay(1000);
     lcd1.clear();
     lcd2.clear();
+
+    //Update the LED matrix:
+    updateBoardLEDs(checkerBoard);
 
     //DFPlayer:
     myDFPlayer.play(19);
