@@ -1066,6 +1066,7 @@ void manualGame(){
     else{
       lcd2.print("Your turn!");
       lcd1.print("Waiting...");
+      
       //DFPlayer:
       myDFPlayer.play(2);
     }
