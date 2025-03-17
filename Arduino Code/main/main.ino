@@ -104,17 +104,13 @@ int LEDMatrix[8][8]={
 };
 
 //Function to update LED board based on checker positions:
-void updateBoardLEDs(){
+void updateBoardLEDs(int refMatrix[8][8]){
   //Clear the matrix:
   matrix.clear();
 
   //Iterate through the entire board, setting each piece correctly on the board:
   for(int i=0; i<8; i++){
     for(int j=0; j<8; j++){
-      if(redArray[i][j]=="AA"){
-        continue;
-      }
-
       //Extract the coordinates from each array:
       int redCoordOne, redCoordTwo, blueCoordOne, blueCoordTwo;
       redCoordOne=(redArray[i][j])[0]-'0';
@@ -123,13 +119,13 @@ void updateBoardLEDs(){
       blueCoordTwo=(blueArray[i][j])[1]-'0';
       
       //Set the lights the appropriate color:
-      if(checkerBoard[i][j]==1){
+      if(refMatrix[i][j]==1){
         matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
       }
-      else if(checkerBoard[i][j]==2){
+      else if(refMatrix[i][j]==2){
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
-      else if(checkerBoard[i][j]==3 || checkerBoard[i][j]==4){
+      else if(refMatrix[i][j]==3 || refMatrix[i][j]==4){
         matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
@@ -423,7 +419,7 @@ void voiceControlledGame(){
     testBoardConfig();
     
     //Update LED matrix:
-    updateBoardLEDs();
+    updateBoardLEDs(checkerBoard);
   }
 }
 
@@ -1149,7 +1145,7 @@ void manualGame(){
     testBoardConfig();
 
     //Update LED matrix:
-    updateBoardLEDs();
+    updateBoardLEDs(checkerBoard);
 
     //Change the player in-turn:
     if(playerInTurn.playerNum==1){
@@ -1169,7 +1165,7 @@ void manualGame(){
     }
 
     //If there isn't a winner, update the LED board accordingly:
-    updateBoardLEDs();
+    updateBoardLEDs(checkerBoard);
   }
 }
 
@@ -1232,17 +1228,24 @@ void setup() {
 
 //Begin the game:
 void loop() {
+  //Initial pattern to be displayed on the LED matrix:
+  int initialMessage[8][8]={{0, 1, 0, 2, 0, 1, 0, 2},
+                            {2, 0, 1, 0, 2, 0, 1, 0},
+                            {0, 2, 0, 1, 0, 2, 0, 1},
+                            {1, 0, 2, 0, 1, 0, 2, 0},
+                            {0, 1, 0, 2, 0, 1, 0, 2},
+                            {2, 0, 1, 0, 2, 0, 1, 0},
+                            {0, 2, 0, 1, 0, 2, 0, 1},
+                            {1, 0, 2, 0, 1, 0, 2, 0}};
+
+  //Initialize the LED matrix:
+  updateBoardLEDs(initialMessage);
+
   //Initialize the board (same for both game modes):
   initializeBoard();
 
-  //Initialize the LED matrix:
-  updateBoardLEDs();
-
   //TEST:
   testBoardConfig();
-  
-  //Update LED matrix:
-  updateBoardLEDs();
 
   //Reset player scores:
   playerOneScore=0;
@@ -1292,32 +1295,39 @@ void loop() {
     delay(2000);
 
     //Print pre-game messages:
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
 
     //DFPlayer:
+    updateBoardLEDs(initialMessage);
     myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
     delay(1000);
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
 
     //DFPlayer:
+    updateBoardLEDs(initialMessage);
     myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
     delay(1000);
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
 
     //DFPlayer:
+    updateBoardLEDs(initialMessage);
     myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
     delay(1000);
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
 
@@ -1326,6 +1336,9 @@ void loop() {
     lcd1.print("Begin!");
     lcd2.print("Begin!");
     delay(1500);
+
+    //Update with the actual board:
+    updateBoardLEDs(checkerBoard);
 
     //Enter the voice-controlled game:
     voiceControlledGame();
@@ -1360,32 +1373,39 @@ void loop() {
     delay(4000);
 
     //Print pre-game messages:
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
 
     //DFPlayer:
+    updateBoardLEDs(initialMessage);
     myDFPlayer.play(5);
     lcd1.print("3");
     lcd2.print("3");
     delay(1000);
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
 
     //DFPlayer:
+    updateBoardLEDs(initialMessage);
     myDFPlayer.play(4);
     lcd1.print("2");
     lcd2.print("2");
     delay(1000);
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
 
     //DFPlayer:
+    updateBoardLEDs(initialMessage);
     myDFPlayer.play(14);
     lcd1.print("1");
     lcd2.print("1");
     delay(1000);
+    matrix.clear();
     lcd1.clear();
     lcd2.clear();
 
@@ -1394,6 +1414,9 @@ void loop() {
     lcd1.print("Begin!");
     lcd2.print("Begin!");
     delay(1500);
+
+    //Update with the actual board:
+    updateBoardLEDs(checkerBoard);
 
     //Enter the manual game:
     manualGame();
