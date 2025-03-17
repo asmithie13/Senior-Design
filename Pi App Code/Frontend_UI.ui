@@ -22,11 +22,13 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="4" column="2">
-     <widget class="QLabel" name="label_6">
+     <widget class="QLabel" name="blueWinLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="styleSheet">
@@ -38,11 +40,13 @@
      </widget>
     </item>
     <item row="2" column="2">
-     <widget class="QLabel" name="label_8">
+     <widget class="QLabel" name="blueKingLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="styleSheet">
@@ -54,11 +58,13 @@
      </widget>
     </item>
     <item row="1" column="2">
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="playerBlueLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="styleSheet">
@@ -70,11 +76,13 @@
      </widget>
     </item>
     <item row="3" column="2">
-     <widget class="QLabel" name="label_5">
+     <widget class="QLabel" name="blueMoveLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="styleSheet">
@@ -88,11 +96,13 @@
     <item row="0" column="0" colspan="3">
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="lastActionLabel">
         <property name="font">
          <font>
           <family>Eras Medium ITC</family>
           <pointsize>14</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
          </font>
         </property>
         <property name="text">
@@ -142,11 +152,13 @@
      </widget>
     </item>
     <item row="3" column="0">
-     <widget class="QLabel" name="label_2">
+     <widget class="QLabel" name="redMoveLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="autoFillBackground">
@@ -161,11 +173,13 @@
      </widget>
     </item>
     <item row="2" column="0">
-     <widget class="QLabel" name="label_7">
+     <widget class="QLabel" name="redKingLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="autoFillBackground">
@@ -180,11 +194,13 @@
      </widget>
     </item>
     <item row="4" column="0">
-     <widget class="QLabel" name="label_3">
+     <widget class="QLabel" name="redWinLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="autoFillBackground">
@@ -199,11 +215,13 @@
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="playerRedLabel">
       <property name="font">
        <font>
         <family>Eras Medium ITC</family>
         <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="autoFillBackground">
