@@ -21,7 +21,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="2">
+    <item row="5" column="2">
      <widget class="QLabel" name="blueWinLabel">
       <property name="font">
        <font>
@@ -39,7 +39,7 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="2">
+    <item row="3" column="2">
      <widget class="QLabel" name="blueKingLabel">
       <property name="font">
        <font>
@@ -75,7 +75,7 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="2">
+    <item row="4" column="2">
      <widget class="QLabel" name="blueMoveLabel">
       <property name="font">
        <font>
@@ -128,7 +128,7 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="1" rowspan="4">
+    <item row="1" column="1" rowspan="5">
      <widget class="Line" name="line_2">
       <property name="enabled">
        <bool>true</bool>
@@ -151,7 +151,7 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
+    <item row="4" column="0">
      <widget class="QLabel" name="redMoveLabel">
       <property name="font">
        <font>
@@ -172,7 +172,7 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
+    <item row="3" column="0">
      <widget class="QLabel" name="redKingLabel">
       <property name="font">
        <font>
@@ -193,7 +193,7 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="0">
+    <item row="5" column="0">
      <widget class="QLabel" name="redWinLabel">
       <property name="font">
        <font>
@@ -232,6 +232,42 @@
       </property>
       <property name="text">
        <string>Player RED:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label">
+      <property name="font">
+       <font>
+        <family>Eras Medium ITC</family>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 137, 139);</string>
+      </property>
+      <property name="text">
+       <string>Pieces Left: </string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLabel" name="label_2">
+      <property name="font">
+       <font>
+        <family>Eras Medium ITC</family>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(139, 174, 255);</string>
+      </property>
+      <property name="text">
+       <string>Pieces Left: </string>
       </property>
      </widget>
     </item>
