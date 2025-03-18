@@ -104,7 +104,7 @@ int LEDMatrix[8][8]={
 };
 
 //Function to update LED board based on checker positions:
-void updateBoardLEDs(int refMatrix[8][8]){
+void updateBoardLEDs(){
   //Clear the matrix:
   matrix.clear();
 
@@ -123,22 +123,48 @@ void updateBoardLEDs(int refMatrix[8][8]){
       blueCoordTwo=(blueArray[i][j])[1]-'0';
       
       //Set the lights the appropriate color:
-      if(refMatrix[i][j]==1){
+      if(checkerBoard[i][j]==1){
         matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
       }
-      else if(refMatrix[i][j]==2){
+      else if(checkerBoard[i][j]==2){
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
-      //Set king pieces to purple:
-      else{
-        matrix.setDot(redCoordOne, blueCoordTwo, 0xFF);
+      else if(checkerBoard[i][j]==3 || checkerBoard[i][j]==4){
+        matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
     }
   }
 
-  //Print the pattern displayed to the LED matrix:
-  testBoardConfig(refMatrix);
+  //Clear all LEDs:
+  strip.fill(strip.Color(0, 0, 0));
+
+  //Set the correct LEDs:
+  for(int i=0; i<8; i++){
+    for(int j=0; j<8; j++){
+      //Turn spaces off that hold no checkers:
+      if(checkerBoard[i][j]==0){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 0));
+      }
+      //Set red checkers:
+      else if(checkerBoard[i][j]==1){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(10, 0, 0));
+      }
+      else if(checkerBoard[i][j]==3){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(80, 0, 0));
+      }
+      //Set blue checkers:
+      else if(checkerBoard[i][j]==2){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 10));
+      }
+      else if(checkerBoard[i][j]==4){
+        strip.setPixelColor(LEDMatrix[i][j], strip.Color(0, 0, 80));
+      }
+    }
+  }
+
+  //Update the strip:
+  strip.show();
 }
 
 //Wait for user keypad input:
@@ -393,22 +419,25 @@ void voiceControlledGame(){
     //Check to see if a king-space must be awarded:
     checkForKing();
 
+    //Show the board configuration:
+    testBoardConfig();
+    
     //Update LED matrix:
-    updateBoardLEDs(checkerBoard);
+    updateBoardLEDs();
   }
 }
 
 //Function for testing that prints the configuration of the board after each move:
-void testBoardConfig(int testBoard[8][8]){
+void testBoardConfig(){
   Serial.print("\nBoard Configuration:");
   for(int i=0; i<8; i++){
     Serial.print("\n");
     for(int j=0; j<8; j++){
-      Serial.print(testBoard[i][j]);
+      Serial.print(checkerBoard[i][j]);
     }
   }
 
-  //Print print each player's score to the terminal:
+  //TEST:
   Serial.print("\nPlayer #1 Score: ");
   Serial.print(playerOneScore);
   Serial.print("\nPlayer #2 Score: ");
@@ -598,7 +627,7 @@ void selectChecker(){
   selectedChecker[0]=coordOne;
   selectedChecker[1]=coordTwo;
 
-  //Print the selected checker coordinates:
+  //TEST:
   Serial.print("\nThe selected checker is:\n");
   Serial.print(coordOne);
   Serial.print(coordTwo);
@@ -1066,7 +1095,6 @@ void manualGame(){
     else{
       lcd2.print("Your turn!");
       lcd1.print("Waiting...");
-      
       //DFPlayer:
       myDFPlayer.play(2);
     }
@@ -1117,6 +1145,12 @@ void manualGame(){
     //Check after the move to see if any king pieces need to be set:
     checkForKing();
 
+    //TEST:
+    testBoardConfig();
+
+    //Update LED matrix:
+    updateBoardLEDs();
+
     //Change the player in-turn:
     if(playerInTurn.playerNum==1){
       playerInTurn.playerNum=2;
@@ -1135,7 +1169,7 @@ void manualGame(){
     }
 
     //If there isn't a winner, update the LED board accordingly:
-    updateBoardLEDs(checkerBoard);
+    updateBoardLEDs();
   }
 }
 
@@ -1164,7 +1198,7 @@ void stubManualMode(){
 
 //Set-up the program:
 void setup() {
-  //Initialize the primary serial port to print results for testing:
+  //TEST:
   Serial.begin(9600);
 
   //Initialize serial communication with the Raspberry Pi:
@@ -1198,21 +1232,17 @@ void setup() {
 
 //Begin the game:
 void loop() {
-  //Initial pattern to be displayed on the LED matrix:
-  int initialMessage[8][8]={{1, 1, 1, 1, 1, 1, 1, 1},
-                      {1, 0, 0, 0, 0, 0, 0, 1},
-                      {1, 0, 2, 2, 2, 2, 0, 1},
-                      {1, 0, 2, 0, 0, 2, 0, 1},
-                      {1, 0, 2, 0, 0, 2, 0, 1},
-                      {1, 0, 2, 2, 2, 2, 0, 1},
-                      {1, 0, 0, 0, 0, 0, 0, 1},
-                      {1, 1, 1, 1, 1, 1, 1, 1}};
-
-  //Initialize the LED matrix:
-  updateBoardLEDs(initialMessage);
-
   //Initialize the board (same for both game modes):
   initializeBoard();
+
+  //Initialize the LED matrix:
+  updateBoardLEDs();
+
+  //TEST:
+  testBoardConfig();
+  
+  //Update LED matrix:
+  updateBoardLEDs();
 
   //Reset player scores:
   playerOneScore=0;
@@ -1266,19 +1296,6 @@ void loop() {
     lcd2.clear();
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
-    
-    //Initial pattern to be displayed on the LED matrix:
-    int threeMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 3, 0, 3, 3, 0, 0},
-                        {0, 3, 0, 0, 0, 0, 3, 0},
-                        {0, 3, 0, 0, 0, 0, 3, 0},
-                        {0, 3, 0, 0, 3, 0, 3, 0},
-                        {0, 0, 3, 3, 0, 3, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0}};
-
-    //Update the LED matrix:
-    updateBoardLEDs(threeMessage);
 
     //DFPlayer:
     myDFPlayer.play(5);
@@ -1288,19 +1305,6 @@ void loop() {
     lcd1.clear();
     lcd2.clear();
 
-    //Initial pattern to be displayed on the LED matrix:
-    int twoMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 2, 0, 0, 2, 2, 0, 0},
-                        {0, 2, 0, 0, 0, 0, 2, 0},
-                        {0, 2, 2, 0, 0, 0, 2, 0},
-                        {0, 2, 0, 2, 0, 0, 2, 0},
-                        {0, 2, 0, 0, 2, 2, 0, 0},
-                        {0, 2, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0}};
-
-    //Update the LED matrix:
-    updateBoardLEDs(twoMessage);
-
     //DFPlayer:
     myDFPlayer.play(4);
     lcd1.print("2");
@@ -1309,19 +1313,6 @@ void loop() {
     lcd1.clear();
     lcd2.clear();
 
-    //Initial pattern to be displayed on the LED matrix:
-    int oneMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 1, 0, 0, 1, 0, 0, 0},
-                        {0, 1, 0, 0, 0, 1, 0, 0},
-                        {0, 1, 1, 1, 1, 1, 1, 0},
-                        {0, 1, 0, 0, 0, 0, 0, 0},
-                        {0, 1, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0}};
-
-    //Update the LED matrix:
-    updateBoardLEDs(oneMessage);
-
     //DFPlayer:
     myDFPlayer.play(14);
     lcd1.print("1");
@@ -1329,9 +1320,6 @@ void loop() {
     delay(1000);
     lcd1.clear();
     lcd2.clear();
-
-    //Update the LED matrix:
-    updateBoardLEDs(checkerBoard);
 
     //DFPlayer:
     myDFPlayer.play(19);
@@ -1377,19 +1365,6 @@ void loop() {
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
 
-    //Initial pattern to be displayed on the LED matrix:
-    int threeMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 3, 0, 3, 3, 0, 0},
-                        {0, 3, 0, 0, 0, 0, 3, 0},
-                        {0, 3, 0, 0, 0, 0, 3, 0},
-                        {0, 3, 0, 0, 3, 0, 3, 0},
-                        {0, 0, 3, 3, 0, 3, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0}};
-
-    //Update the LED matrix:
-    updateBoardLEDs(threeMessage);
-    
     //DFPlayer:
     myDFPlayer.play(5);
     lcd1.print("3");
@@ -1398,19 +1373,6 @@ void loop() {
     lcd1.clear();
     lcd2.clear();
 
-    //Initial pattern to be displayed on the LED matrix:
-    int twoMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 2, 0, 0, 2, 2, 0, 0},
-                        {0, 2, 0, 0, 0, 0, 2, 0},
-                        {0, 2, 2, 0, 0, 0, 2, 0},
-                        {0, 2, 0, 2, 0, 0, 2, 0},
-                        {0, 2, 0, 0, 2, 2, 0, 0},
-                        {0, 2, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0}};
-
-    //Update the LED matrix:
-    updateBoardLEDs(twoMessage);
-
     //DFPlayer:
     myDFPlayer.play(4);
     lcd1.print("2");
@@ -1418,19 +1380,6 @@ void loop() {
     delay(1000);
     lcd1.clear();
     lcd2.clear();
-    
-    //Initial pattern to be displayed on the LED matrix:
-    int oneMessage[8][8]={{0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 1, 0, 0, 1, 0, 0, 0},
-                        {0, 1, 0, 0, 0, 1, 0, 0},
-                        {0, 1, 1, 1, 1, 1, 1, 0},
-                        {0, 1, 0, 0, 0, 0, 0, 0},
-                        {0, 1, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0}};
-
-    //Update the LED matrix:
-    updateBoardLEDs(oneMessage);
 
     //DFPlayer:
     myDFPlayer.play(14);
@@ -1439,9 +1388,6 @@ void loop() {
     delay(1000);
     lcd1.clear();
     lcd2.clear();
-
-    //Update the LED matrix:
-    updateBoardLEDs(checkerBoard);
 
     //DFPlayer:
     myDFPlayer.play(19);
@@ -1452,7 +1398,7 @@ void loop() {
     //Enter the manual game:
     manualGame();
 
-    //Stub game to test manual operation:
+    //TEST:
     //stubManualMode();
   }
 
