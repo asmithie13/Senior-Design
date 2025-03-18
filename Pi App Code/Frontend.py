@@ -16,6 +16,7 @@ class Frontend(QMainWindow):
 
         # Signals
         self.backend.lastAction.connect(self.updateLastAction)
+        self.backend.resetSignal.connect(self.updateOnReset)
         self.backend.redPieces.connect(self.updateRedPieces)
         self.backend.bluePieces.connect(self.updateBluePieces)
         self.backend.redKings.connect(self.updateRedKings)
@@ -26,6 +27,9 @@ class Frontend(QMainWindow):
         self.backend.blueChance.connect(self.updateBlueChance)
 
     def updateLastAction(self, action):
+        return
+    
+    def updateOnReset(self):
         return
     
     def updateRedPieces(self, num):

@@ -10,6 +10,8 @@ class GameBoard():
         self.currentPlayer = Player.BLACK   # black pieces always move first
         self.redPieces = 12 # red pieces totals
         self.blackPieces = 12   # black pieces totals
+        self.redKings = []  # red king coords
+        self.blueKings = [] # blue king coords
         self.canDoubleJumpFlag = False  # bool to track if double jump is possinle
         self.doubleJumpNextMoves = []   # moves that need to be selected if there is a valid double jump
 
@@ -131,6 +133,7 @@ class GameBoard():
         # Regular Move
         if xDistance == 1:
             self.regularMove(move)
+            if self.tiles[move.end[0]][move.end[1]] and self.tiles[move.end[0]][move.end[1]].isKing: self.updateKingArrs() 
             self.switchPlayers()
             self.sendMoveToArduino(move, MoveType.NON_DOUBLE_JUMP_MOVE)
             return True, MoveSuccess.NORMAL_MOVE
@@ -147,15 +150,18 @@ class GameBoard():
         self.overtakeMove(move, midPoint)
         if self.redPieces == 0 or self.blackPieces == 0:
             self.handleReset()
+            #self.updateKingArrs() 
             return True, self.returnWinner()
         
         # Check double jump
         self.canDoubleJump(move)
         if self.canDoubleJumpFlag:
             self.sendMoveToArduino(move, MoveType.DOUBLE_JUMP_MOVE)
+            if self.tiles[move.end[0]][move.end[1]] and self.tiles[move.end[0]][move.end[1]].isKing: self.updateKingArrs() 
             return True, MoveSuccess.DOUBLE_JUMP
         
         self.sendMoveToArduino(move, MoveType.NON_DOUBLE_JUMP_MOVE)
+        if self.tiles[move.end[0]][move.end[1]] and self.tiles[move.end[0]][move.end[1]].isKing: self.updateKingArrs()
         self.switchPlayers()
         self.canDoubleJumpFlag = False
         self.doubleJumpNextMoves = []
@@ -209,6 +215,12 @@ class GameBoard():
             self.tiles[move.end[0]][move.end[1]].isKing = True
         elif self.tiles[move.end[0]][move.end[1]].location[0] == 0 and self.tiles[move.end[0]][move.end[1]].player == Player.RED:
             self.tiles[move.end[0]][move.end[1]].isKing = True
+
+        if self.tiles[move.end[0]][move.end[1]].isKing and self.currentPlayer == Player.BLACK:
+            self.blueKings.append(move.end)
+
+        if self.tiles[move.end[0]][move.end[1]].isKing and self.currentPlayer == Player.RED:
+            self.redKings.append(move.end)
     
     def canDoubleJump(self, oldMove):
         potentialMoves = []
@@ -246,4 +258,16 @@ class GameBoard():
         if self.blackPieces == self.redPieces: return MoveSuccess.TIED_GAME
         if self.blackPieces > self.redPieces: return MoveSuccess.BLACK_WINS
         return MoveSuccess.RED_WINS
+    
+    def updateKingArrs(self):
+        tempArrRed = []
+        tempArrBlue = []
+        for i in range(8):
+            for j in range(8):
+                if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.RED:
+                    tempArrRed.append([i, j])
+                if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.BLACK:
+                    tempArrBlue.append([i, j])
+        self.redKings = tempArrRed
+        self.blueKings = tempArrBlue
   
