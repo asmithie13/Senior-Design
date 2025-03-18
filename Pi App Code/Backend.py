@@ -9,6 +9,16 @@ import sys
 class Backend(QObject):
     latestMove = pyqtSignal(str)
 
+    lastAction = pyqtSignal(object)
+    redPieces = pyqtSignal(int)
+    bluePieces = pyqtSignal(int)
+    redKings = pyqtSignal(int)
+    blueKings = pyqtSignal(int)
+    redMoves = pyqtSignal(Move)
+    blueMoves = pyqtSignal(Move)
+    redChance = pyqtSignal(float)
+    blueChance = pyqtSignal(float)
+
     def __init__(self):
         super().__init__()
         self.app = Flask(__name__)

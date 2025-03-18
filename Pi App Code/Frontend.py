@@ -13,6 +13,33 @@ class Frontend(QMainWindow):
         self.backendThread.start()
     
         self.backend.latestMove.connect(self.updateLastMove)
+
+    def updateLastAction(self, action):
+        return
+    
+    def updateRedPieces(self, num):
+        return
+    
+    def updateBluePieces(self, num):
+        return
+    
+    def updateRedKings(self, num):
+        return
+    
+    def updateBlueKings(self, num):
+        return
+    
+    def updateRedMove(self, move):
+        return
+    
+    def updateBlueMove(self, move):
+        return
+    
+    def updateRedChance(self, chance):
+        return
+    
+    def updateBlueChance(self, chance):
+        return
     
     def updateLastMove(self, text):
         self.label.setText(text)
