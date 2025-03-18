@@ -9,15 +9,15 @@ import sys
 class Backend(QObject):
     latestMove = pyqtSignal(str)
 
-    lastAction = pyqtSignal(object)
+    lastAction = pyqtSignal(object) # TODO
     redPieces = pyqtSignal(int)
     bluePieces = pyqtSignal(int)
-    redKings = pyqtSignal(int)
-    blueKings = pyqtSignal(int)
+    redKings = pyqtSignal(int) # TODO
+    blueKings = pyqtSignal(int) # TODO
     redMoves = pyqtSignal(Move)
     blueMoves = pyqtSignal(Move)
-    redChance = pyqtSignal(float)
-    blueChance = pyqtSignal(float)
+    redChance = pyqtSignal(float) # TODO
+    blueChance = pyqtSignal(float) # TODO
 
     def __init__(self):
         super().__init__()
@@ -63,6 +63,19 @@ class Backend(QObject):
                 'status': result[0],
                 'message': result[1]
                 }
+
+                # Update red piece count
+                if result[0]:
+                    self.redPieces.emit(self.gb.redPieces)
+                    self.bluePieces.emit(self.gb.blackPieces)
+                    # self.redKings
+                    # self.blueKings
+                    if self.gb.currentPlayer == Player.RED:
+                        self.redMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                    elif self.gb.currentPlayer == Player.BLACK:
+                        self.blueMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+
+
                 return jsonify(response)
             
             except Exception as e:

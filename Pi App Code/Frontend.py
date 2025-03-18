@@ -14,6 +14,17 @@ class Frontend(QMainWindow):
     
         self.backend.latestMove.connect(self.updateLastMove)
 
+        # Signals
+        self.backend.lastAction.connect(self.updateLastAction)
+        self.backend.redPieces.connect(self.updateRedPieces)
+        self.backend.bluePieces.connect(self.updateBluePieces)
+        self.backend.redKings.connect(self.updateRedKings)
+        self.backend.blueKings.connect(self.updateBlueKings)
+        self.backend.redMoves.connect(self.updateRedMove)
+        self.backend.blueMoves.connect(self.updateBlueMove)
+        self.backend.redChance.connect(self.updateRedChance)
+        self.backend.blueChance.connect(self.updateBlueChance)
+
     def updateLastAction(self, action):
         return
     
