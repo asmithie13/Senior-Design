@@ -749,24 +749,18 @@ int checkIfMovePlayerTwo(int coordOne, int coordTwo){
 bool checkDoubleJump(){
   //Check if a double-jump is available, depending on the piece:
   if(checkerBoard[prevChecker[0]][prevChecker[1]]==1){
-    Serial.print("ONE");
     if(prevChecker[0]+2<8 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]-2]==0){
-      Serial.print("A");
       return true;
     }
     if(prevChecker[0]+2<8 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]+2]==0){
-      Serial.print("B");
       return true;
     }
   }
   else if(checkerBoard[prevChecker[0]][prevChecker[1]]==2){
-    Serial.print("TWO");
     if(prevChecker[0]-2>=0 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]-2]==0){
-      Serial.print("C");
       return true;
     }
     if(prevChecker[0]-2>=0 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]+2]==0){
-      Serial.print("D");
       return true;
     }
   }
@@ -1137,27 +1131,33 @@ void manualGame(){
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
 
-    //Display messages based on the player in-turn:
-    if(playerInTurn.playerNum==1){
-      lcd1.print("Your turn!");
-      lcd2.print("Waiting...");
-
-      //DFPlayer:
-      myDFPlayer.play(3);
-    }
-    else{
-      lcd2.print("Your turn!");
-      lcd1.print("Waiting...");
-      //DFPlayer:
-      myDFPlayer.play(2);
-    }
-
     //Determine if another checker must be selected, or if a double-jump is available:
     if(inJump==false){
+      //Display messages based on the player in-turn:
+      if(playerInTurn.playerNum==1){
+        lcd1.print("Your turn!");
+        lcd2.print("Waiting...");
+
+        //DFPlayer:
+        myDFPlayer.play(3);
+      }
+      else{
+        lcd2.print("Your turn!");
+        lcd1.print("Waiting...");
+        //DFPlayer:
+        myDFPlayer.play(2);
+      }
       //Select the checker to be moved:
       selectChecker();
     }
     else{
+      //Display messages based on the player in-turn:
+      if(playerInTurn.playerNum==1){
+        lcd2.print("Waiting...");
+      }
+      else{
+        lcd1.print("Waiting...");
+      }
       selectedChecker[0]=prevChecker[0];
       selectedChecker[1]=prevChecker[1];
     }
