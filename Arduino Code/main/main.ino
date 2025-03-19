@@ -58,6 +58,9 @@ int selectedChecker[2]={NULL, NULL};
 //Previously-moved checker:
 int prevChecker[2]={NULL, NULL};
 
+//Boolean variable indicating a double-jump:
+bool inJump;
+
 //Initialize scores:
 int playerOneScore=0;
 int playerTwoScore=0;
@@ -891,7 +894,7 @@ void moveChecker(){
   int firstFlag=0;
 
   //If the input coordinate was invalid, ask again:
-  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
+  while((inJump==true && (abs(coordOne-selectedChecker[0])==1 || abs(coordOne-selectedChecker[1])==1)) || coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
     //If this is not the first iteration of the loop, it means that the user's first input...
     //...was invalid. Display a message indicating this:
     if(firstFlag!=0){
@@ -1120,7 +1123,7 @@ bool checkForWinner(){
 //Function to execute the manual game mode:
 void manualGame(){
   //Boolean variable to signal a double-jump:
-  bool inJump=false;
+  inJump=false;
 
   //Begin game loop:
   while(1){
