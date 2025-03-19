@@ -1,5 +1,5 @@
-//Main program for executing voice-controlled and manually-controlled...
-//...checkers on the Arduino:
+//--Main program for executing voice-controlled and manually-controlled...
+//...checkers on the Arduino--
 
 //Include statements:
 #include <Wire.h>
@@ -54,6 +54,12 @@ int checkerBoard[8][8];
 
 //Selected checker:
 int selectedChecker[2]={NULL, NULL};
+
+//Previously-moved checker:
+int prevChecker[2]={NULL, NULL};
+
+//Boolean variable indicating a double-jump:
+bool inJump;
 
 //Initialize scores:
 int playerOneScore=0;
@@ -437,7 +443,7 @@ void testBoardConfig(){
     }
   }
 
-  //TEST:
+  //Print each player's score:
   Serial.print("\nPlayer #1 Score: ");
   Serial.print(playerOneScore);
   Serial.print("\nPlayer #2 Score: ");
@@ -627,7 +633,7 @@ void selectChecker(){
   selectedChecker[0]=coordOne;
   selectedChecker[1]=coordTwo;
 
-  //TEST:
+  //Print the selected checker:
   Serial.print("\nThe selected checker is:\n");
   Serial.print(coordOne);
   Serial.print(coordTwo);
@@ -742,6 +748,42 @@ int checkIfMovePlayerTwo(int coordOne, int coordTwo){
   return 0;
 }
 
+//Check if a double-jump is available:
+bool checkDoubleJump(){
+  //Check if a double-jump is available, depending on the piece:
+  if(checkerBoard[prevChecker[0]][prevChecker[1]]==1){
+    if(prevChecker[0]+2<8 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]-2]==0){
+      return true;
+    }
+    if(prevChecker[0]+2<8 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]+2]==0){
+      return true;
+    }
+  }
+  else if(checkerBoard[prevChecker[0]][prevChecker[1]]==2){
+    if(prevChecker[0]-2>=0 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]-2]==0){
+      return true;
+    }
+    if(prevChecker[0]-2>=0 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]+2]==0){
+      return true;
+    }
+  }
+  else{
+    if(prevChecker[0]+2<8 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]-2]==0){
+      return true;
+    }
+    if(prevChecker[0]+2<8 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]+2]==0){
+      return true;
+    }
+    if(prevChecker[0]-2>=0 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]-2]==0){
+      return true;
+    }
+    if(prevChecker[0]-2>=0 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]+2]==0){
+      return true;
+    }
+  }
+  return false;
+}
+
 //Function to increment the player's score:
 void incrementScore(){
   if(playerInTurn.playerNum==1){
@@ -852,7 +894,7 @@ void moveChecker(){
   int firstFlag=0;
 
   //If the input coordinate was invalid, ask again:
-  while(coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
+  while((inJump==true && (abs(coordOne-selectedChecker[0])==1 || abs(coordOne-selectedChecker[1])==1)) || coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
     //If this is not the first iteration of the loop, it means that the user's first input...
     //...was invalid. Display a message indicating this:
     if(firstFlag!=0){
@@ -1041,6 +1083,10 @@ void moveChecker(){
   delay(1000);
   myDFPlayer.play(audioArray[coordTwo]);
 
+  //Set the previously-moved checker:
+  prevChecker[0]=coordOne;
+  prevChecker[1]=coordTwo;
+
   //Set the spot where the selected checker was to an empty space:
   checkerBoard[selectedChecker[0]][selectedChecker[1]]=0;
   
@@ -1076,6 +1122,10 @@ bool checkForWinner(){
 
 //Function to execute the manual game mode:
 void manualGame(){
+  //Boolean variable to signal a double-jump:
+  inJump=false;
+
+  //Begin game loop:
   while(1){
     //Clear both screens after a short delay:
     delay(1000);
@@ -1084,23 +1134,36 @@ void manualGame(){
     lcd1.setCursor(0, 0);
     lcd2.setCursor(0, 0);
 
-    //Display messages based on the player in-turn:
-    if(playerInTurn.playerNum==1){
-      lcd1.print("Your turn!");
-      lcd2.print("Waiting...");
+    //Determine if another checker must be selected, or if a double-jump is available:
+    if(inJump==false){
+      //Display messages based on the player in-turn:
+      if(playerInTurn.playerNum==1){
+        lcd1.print("Your turn!");
+        lcd2.print("Waiting...");
 
-      //DFPlayer:
-      myDFPlayer.play(3);
+        //DFPlayer:
+        myDFPlayer.play(3);
+      }
+      else{
+        lcd2.print("Your turn!");
+        lcd1.print("Waiting...");
+        //DFPlayer:
+        myDFPlayer.play(2);
+      }
+      //Select the checker to be moved:
+      selectChecker();
     }
     else{
-      lcd2.print("Your turn!");
-      lcd1.print("Waiting...");
-      //DFPlayer:
-      myDFPlayer.play(2);
+      //Display messages based on the player in-turn:
+      if(playerInTurn.playerNum==1){
+        lcd2.print("Waiting...");
+      }
+      else{
+        lcd1.print("Waiting...");
+      }
+      selectedChecker[0]=prevChecker[0];
+      selectedChecker[1]=prevChecker[1];
     }
-  
-    //Select the checker to be moved:
-    selectChecker();
 
     //Check for the reset signal:
     if(resetSig==true){
@@ -1145,18 +1208,23 @@ void manualGame(){
     //Check after the move to see if any king pieces need to be set:
     checkForKing();
 
-    //TEST:
-    testBoardConfig();
-
     //Update LED matrix:
     updateBoardLEDs();
 
-    //Change the player in-turn:
-    if(playerInTurn.playerNum==1){
-      playerInTurn.playerNum=2;
-    }
-    else if(playerInTurn.playerNum==2){
-      playerInTurn.playerNum=1;
+    //Print board map to serial monitor:
+    testBoardConfig();
+
+    //Check for a double-jump:
+    inJump=checkDoubleJump();
+
+    //Change the player in-turn if no double-jump occurs:
+    if(inJump==false){
+      if(playerInTurn.playerNum==1){
+        playerInTurn.playerNum=2;
+      }
+      else if(playerInTurn.playerNum==2){
+        playerInTurn.playerNum=1;
+      }
     }
   
     //Check to see if there is a winner:
@@ -1167,9 +1235,6 @@ void manualGame(){
     if(isWinner==true){
       break;
     }
-
-    //If there isn't a winner, update the LED board accordingly:
-    updateBoardLEDs();
   }
 }
 
@@ -1198,7 +1263,7 @@ void stubManualMode(){
 
 //Set-up the program:
 void setup() {
-  //TEST:
+  //Initialize serial monitor:
   Serial.begin(9600);
 
   //Initialize serial communication with the Raspberry Pi:
@@ -1238,11 +1303,8 @@ void loop() {
   //Initialize the LED matrix:
   updateBoardLEDs();
 
-  //TEST:
+  //Print board map to serial monitor:
   testBoardConfig();
-  
-  //Update LED matrix:
-  updateBoardLEDs();
 
   //Reset player scores:
   playerOneScore=0;
@@ -1398,7 +1460,7 @@ void loop() {
     //Enter the manual game:
     manualGame();
 
-    //TEST:
+    //Manual game stub:
     //stubManualMode();
   }
 
