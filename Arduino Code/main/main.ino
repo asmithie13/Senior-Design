@@ -55,6 +55,9 @@ int checkerBoard[8][8];
 //Selected checker:
 int selectedChecker[2]={NULL, NULL};
 
+//Previously-moved checker:
+int prevChecker[2]={NULL, NULL};
+
 //Initialize scores:
 int playerOneScore=0;
 int playerTwoScore=0;
@@ -742,6 +745,48 @@ int checkIfMovePlayerTwo(int coordOne, int coordTwo){
   return 0;
 }
 
+//Check if a double-jump is available:
+bool checkDoubleJump(){
+  //Check if a double-jump is available, depending on the piece:
+  if(checkerBoard[prevChecker[0]][prevChecker[1]]==1){
+    Serial.print("ONE");
+    if(prevChecker[0]+2<8 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]-2]==0){
+      Serial.print("A");
+      return true;
+    }
+    if(prevChecker[0]+2<8 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]+2]==0){
+      Serial.print("B");
+      return true;
+    }
+  }
+  else if(checkerBoard[prevChecker[0]][prevChecker[1]]==2){
+    Serial.print("TWO");
+    if(prevChecker[0]-2>=0 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]-2]==0){
+      Serial.print("C");
+      return true;
+    }
+    if(prevChecker[0]-2>=0 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]+2]==0){
+      Serial.print("D");
+      return true;
+    }
+  }
+  else{
+    if(prevChecker[0]+2<8 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]-1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]-2]==0){
+      return true;
+    }
+    if(prevChecker[0]+2<8 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==2 || checkerBoard[prevChecker[0]+1][prevChecker[1]+1]==4) && checkerBoard[prevChecker[0]+2][prevChecker[1]+2]==0){
+      return true;
+    }
+    if(prevChecker[0]-2>=0 && prevChecker[1]-2>=0 && (checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]-1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]-2]==0){
+      return true;
+    }
+    if(prevChecker[0]-2>=0 && prevChecker[1]+2<8 && (checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==1 || checkerBoard[prevChecker[0]-1][prevChecker[1]+1]==3) && checkerBoard[prevChecker[0]-2][prevChecker[1]+2]==0){
+      return true;
+    }
+  }
+  return false;
+}
+
 //Function to increment the player's score:
 void incrementScore(){
   if(playerInTurn.playerNum==1){
@@ -1041,6 +1086,10 @@ void moveChecker(){
   delay(1000);
   myDFPlayer.play(audioArray[coordTwo]);
 
+  //Set the previously-moved checker:
+  prevChecker[0]=coordOne;
+  prevChecker[1]=coordTwo;
+
   //Set the spot where the selected checker was to an empty space:
   checkerBoard[selectedChecker[0]][selectedChecker[1]]=0;
   
@@ -1076,6 +1125,10 @@ bool checkForWinner(){
 
 //Function to execute the manual game mode:
 void manualGame(){
+  //Boolean variable to signal a double-jump:
+  bool inJump=false;
+
+  //Begin game loop:
   while(1){
     //Clear both screens after a short delay:
     delay(1000);
@@ -1098,9 +1151,16 @@ void manualGame(){
       //DFPlayer:
       myDFPlayer.play(2);
     }
-  
-    //Select the checker to be moved:
-    selectChecker();
+
+    //Determine if another checker must be selected, or if a double-jump is available:
+    if(inJump==false){
+      //Select the checker to be moved:
+      selectChecker();
+    }
+    else{
+      selectedChecker[0]=prevChecker[0];
+      selectedChecker[1]=prevChecker[1];
+    }
 
     //Check for the reset signal:
     if(resetSig==true){
@@ -1151,12 +1211,17 @@ void manualGame(){
     //Update LED matrix:
     updateBoardLEDs();
 
-    //Change the player in-turn:
-    if(playerInTurn.playerNum==1){
-      playerInTurn.playerNum=2;
-    }
-    else if(playerInTurn.playerNum==2){
-      playerInTurn.playerNum=1;
+    //Check for a double-jump:
+    inJump=checkDoubleJump();
+
+    //Change the player in-turn if no double-jump occurs:
+    if(inJump==false){
+      if(playerInTurn.playerNum==1){
+        playerInTurn.playerNum=2;
+      }
+      else if(playerInTurn.playerNum==2){
+        playerInTurn.playerNum=1;
+      }
     }
   
     //Check to see if there is a winner:
