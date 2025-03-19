@@ -30,7 +30,17 @@ class Frontend(QMainWindow):
         return
     
     def updateOnReset(self):
-        return
+        self.lastActionLabel.setText("Last Action:")
+        self.playerRedLabel.setText("Player RED:")
+        self.playerBlueLabel.setText("Player BLUE:")
+        self.redPiecesLeft.setText("Pieces Left:")
+        self.bluePiecesLeft.setText("Pieces Left:")
+        self.redKingLabel.setText("King Pieces:")
+        self.blueKingLabel.setText("King Pieces:")
+        self.redMoveLabel.setText("Last Move:")
+        self.blueMoveLabel.setText("Last Move:")
+        self.redWinLabel.setText("Win %:")
+        self.blueWinLabel.setText("Win %:")
     
     def updateRedPieces(self, num):
         return
