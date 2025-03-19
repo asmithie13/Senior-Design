@@ -7,7 +7,16 @@ from PyQt6.QtWidgets import QApplication
 import sys
 
 class Backend(QObject):
-    latestMove = pyqtSignal(str)
+    lastAction = pyqtSignal(object)
+    resetSignal = pyqtSignal()
+    redPieces = pyqtSignal(int)
+    bluePieces = pyqtSignal(int)
+    redKings = pyqtSignal(list)
+    blueKings = pyqtSignal(list)
+    redMoves = pyqtSignal(Move)
+    blueMoves = pyqtSignal(Move)
+    redChance = pyqtSignal(float) # TODO
+    blueChance = pyqtSignal(float) # TODO
 
     def __init__(self):
         super().__init__()
@@ -24,9 +33,11 @@ class Backend(QObject):
                 print(f"Received data: {data}")
             except Exception as e:
                 print(f"{PhoneError.DECODE_ERROR.value}: {e}")
+                result = [False, PhoneError.DECODE_ERROR.value]
+                self.lastAction.emit(result)
                 response = {
-                'status': False,
-                'message': PhoneError.DECODE_ERROR.value
+                'status': result[0],
+                'message': result[1]
                 }
                 return jsonify(response)
         
@@ -34,9 +45,10 @@ class Backend(QObject):
             if data == "*":
                 print("Reset Signal Sent")
                 result = self.gb.handleReset()
+                self.resetSignal.emit()
                 print(result[0])
                 print(result[1].value)
-
+                self.lastAction.emit(result)
                 response = {
                 'status': result[0],
                 'message': result[1]
@@ -46,13 +58,27 @@ class Backend(QObject):
             # Normal move case
             try:
                 result = self.gb.validateMove(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
-                self.latestMove.emit(data)
+                self.lastAction.emit(result)
                 print(result[0])
                 print(result[1].value)
                 response = {
                 'status': result[0],
                 'message': result[1]
                 }
+
+                # Update red piece count
+                if result[0]:
+                    self.redPieces.emit(self.gb.redPieces)
+                    self.bluePieces.emit(self.gb.blackPieces)
+                    self.redKings.emit(self.gb.redKings)
+                    self.blueKings.emit(self.gb.blueKings)
+                    
+                    if self.gb.currentPlayer == Player.RED:
+                        self.redMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                    elif self.gb.currentPlayer == Player.BLACK:
+                        self.blueMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+
+
                 return jsonify(response)
             
             except Exception as e:
