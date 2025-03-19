@@ -7,14 +7,12 @@ from PyQt6.QtWidgets import QApplication
 import sys
 
 class Backend(QObject):
-    latestMove = pyqtSignal(str)
-
     lastAction = pyqtSignal(object)
     resetSignal = pyqtSignal()
     redPieces = pyqtSignal(int)
     bluePieces = pyqtSignal(int)
-    redKings = pyqtSignal(int)
-    blueKings = pyqtSignal(int)
+    redKings = pyqtSignal(list)
+    blueKings = pyqtSignal(list)
     redMoves = pyqtSignal(Move)
     blueMoves = pyqtSignal(Move)
     redChance = pyqtSignal(float) # TODO

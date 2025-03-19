@@ -53,7 +53,7 @@
        <string notr="true">color: rgb(139, 174, 255);</string>
       </property>
       <property name="text">
-       <string>King Pieces:</string>
+       <string>King Pieces: None</string>
       </property>
      </widget>
     </item>
@@ -189,7 +189,7 @@
        <string notr="true">color: rgb(255, 137, 139);</string>
       </property>
       <property name="text">
-       <string>King Pieces:</string>
+       <string>King Pieces: None</string>
       </property>
      </widget>
     </item>
@@ -249,7 +249,7 @@
        <string notr="true">color: rgb(255, 137, 139);</string>
       </property>
       <property name="text">
-       <string>Pieces Left: </string>
+       <string>Pieces Left: 12</string>
       </property>
      </widget>
     </item>
@@ -267,7 +267,7 @@
        <string notr="true">color: rgb(139, 174, 255);</string>
       </property>
       <property name="text">
-       <string>Pieces Left: </string>
+       <string>Pieces Left: 12</string>
       </property>
      </widget>
     </item>

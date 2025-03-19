@@ -12,8 +12,6 @@ class Frontend(QMainWindow):
         self.backendThread = FlaskThread(self.backend)
         self.backendThread.start()
     
-        self.backend.latestMove.connect(self.updateLastMove)
-
         # Signals
         self.backend.lastAction.connect(self.updateLastAction)
         self.backend.resetSignal.connect(self.updateOnReset)
@@ -27,14 +25,16 @@ class Frontend(QMainWindow):
         self.backend.blueChance.connect(self.updateBlueChance)
 
     def updateLastAction(self, action):
-        return
+        defaultStr = "Last Action: "
+        defaultStr += action[1].value
+        self.lastActionLabel.setText(defaultStr)
     
     def updateOnReset(self):
         self.lastActionLabel.setText("Last Action:")
         self.playerRedLabel.setText("Player RED:")
         self.playerBlueLabel.setText("Player BLUE:")
-        self.redPiecesLeft.setText("Pieces Left:")
-        self.bluePiecesLeft.setText("Pieces Left:")
+        self.redPiecesLeft.setText("Pieces Left: 12")
+        self.bluePiecesLeft.setText("Pieces Left: 12")
         self.redKingLabel.setText("King Pieces:")
         self.blueKingLabel.setText("King Pieces:")
         self.redMoveLabel.setText("Last Move:")
@@ -43,22 +43,36 @@ class Frontend(QMainWindow):
         self.blueWinLabel.setText("Win %:")
     
     def updateRedPieces(self, num):
-        return
+        defaultStr = "Pieces Left: "
+        defaultStr += str(num)
+        self.redPiecesLeft.setText(defaultStr)
     
     def updateBluePieces(self, num):
-        return
+        defaultStr = "Pieces Left: "
+        defaultStr += str(num)
+        self.bluePiecesLeft.setText(defaultStr)
     
-    def updateRedKings(self, num):
-        return
+    def updateRedKings(self, arr):
+        if not arr: return
+        defaultStr = "King Pieces: "
+        defaultStr += str(arr)
+        self.redKingLabel.setText(defaultStr)
     
-    def updateBlueKings(self, num):
-        return
+    def updateBlueKings(self, arr):
+        if not arr: return
+        defaultStr = "King Pieces: "
+        defaultStr += str(arr)
+        self.blueKingLabel.setText(defaultStr)
     
     def updateRedMove(self, move):
-        return
-    
+        defaultStr = "Last Move: "
+        defaultStr += str(move.start[0]) + str(move.start[1]) + " to " + str(move.end[0]) + str(move.end[1])
+        self.redMoveLabel.setText(defaultStr)
+
     def updateBlueMove(self, move):
-        return
+        defaultStr = "Last Move: "
+        defaultStr += str(move.start[0]) + str(move.start[1]) + " to " + str(move.end[0]) + str(move.end[1])
+        self.blueMoveLabel.setText(defaultStr)
     
     def updateRedChance(self, chance):
         return
@@ -66,9 +80,6 @@ class Frontend(QMainWindow):
     def updateBlueChance(self, chance):
         return
     
-    def updateLastMove(self, text):
-        self.label.setText(text)
-        print(text)
  
 if __name__ == "__main__":
     app = QApplication(sys.argv)
