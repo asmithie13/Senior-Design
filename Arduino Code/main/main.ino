@@ -1,5 +1,5 @@
-//Main program for executing voice-controlled and manually-controlled...
-//...checkers on the Arduino:
+//--Main program for executing voice-controlled and manually-controlled...
+//...checkers on the Arduino--
 
 //Include statements:
 #include <Wire.h>
@@ -443,7 +443,7 @@ void testBoardConfig(){
     }
   }
 
-  //TEST:
+  //Print each player's score:
   Serial.print("\nPlayer #1 Score: ");
   Serial.print(playerOneScore);
   Serial.print("\nPlayer #2 Score: ");
@@ -633,7 +633,7 @@ void selectChecker(){
   selectedChecker[0]=coordOne;
   selectedChecker[1]=coordTwo;
 
-  //TEST:
+  //Print the selected checker:
   Serial.print("\nThe selected checker is:\n");
   Serial.print(coordOne);
   Serial.print(coordTwo);
@@ -1208,11 +1208,11 @@ void manualGame(){
     //Check after the move to see if any king pieces need to be set:
     checkForKing();
 
-    //TEST:
-    testBoardConfig();
-
     //Update LED matrix:
     updateBoardLEDs();
+
+    //Print board map to serial monitor:
+    testBoardConfig();
 
     //Check for a double-jump:
     inJump=checkDoubleJump();
@@ -1235,9 +1235,6 @@ void manualGame(){
     if(isWinner==true){
       break;
     }
-
-    //If there isn't a winner, update the LED board accordingly:
-    updateBoardLEDs();
   }
 }
 
@@ -1266,7 +1263,7 @@ void stubManualMode(){
 
 //Set-up the program:
 void setup() {
-  //TEST:
+  //Initialize serial monitor:
   Serial.begin(9600);
 
   //Initialize serial communication with the Raspberry Pi:
@@ -1306,11 +1303,8 @@ void loop() {
   //Initialize the LED matrix:
   updateBoardLEDs();
 
-  //TEST:
+  //Print board map to serial monitor:
   testBoardConfig();
-  
-  //Update LED matrix:
-  updateBoardLEDs();
 
   //Reset player scores:
   playerOneScore=0;
@@ -1466,7 +1460,7 @@ void loop() {
     //Enter the manual game:
     manualGame();
 
-    //TEST:
+    //Manual game stub:
     //stubManualMode();
   }
 
