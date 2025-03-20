@@ -69,14 +69,16 @@ class Backend(QObject):
                 # Update red piece count
                 if result[0]:
                     self.redPieces.emit(self.gb.redPieces)
-                    self.bluePieces.emit(self.gb.blackPieces)
+                    self.bluePieces.emit(self.gb.bluePieces)
                     self.redKings.emit(self.gb.redKings)
                     self.blueKings.emit(self.gb.blueKings)
                     
-                    if self.gb.currentPlayer == Player.RED:
-                        self.redMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
-                    elif self.gb.currentPlayer == Player.BLACK:
-                        self.blueMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                    if self.gb.currentPlayer == Player.BLUE:
+                        if not self.gb.canDoubleJumpFlag: self.redMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                        else: self.blueMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                    elif self.gb.currentPlayer == Player.RED:
+                        if not self.gb.canDoubleJumpFlag: self.blueMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
+                        else: self.redMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
 
 
                 return jsonify(response)

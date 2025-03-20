@@ -182,18 +182,18 @@ class GameBoard():
         self.tiles[midPoint[0]][midPoint[1]] = None
 
         if self.currentPlayer == Player.RED:
-            self.redPieces -= 1
-        else:
             self.bluePieces -= 1
+        else:
+            self.redPieces -= 1
 
     def returnMidpoint(self, move):
         return [(move.start[0] + move.end[0]) // 2, (move.start[1] + move.end[1]) // 2]
     
     def switchPlayers(self):
-        if self.currentPlayer == Player.BLUE:
-            self.currentPlayer = Player.RED
-        elif self.currentPlayer == Player.RED:
+        if self.currentPlayer == Player.RED:
             self.currentPlayer = Player.BLUE
+        elif self.currentPlayer == Player.BLUE:
+            self.currentPlayer = Player.RED
     
     def kingMoveCheck(self, move):
         startPiece = self.tiles[move.start[0]][move.start[1]]
