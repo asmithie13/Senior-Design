@@ -7,9 +7,9 @@ class GameBoard():
     def __init__(self):
         self.serialObject = self.connectArduino()   # Bluetooth object to Arduino
         self.tiles = [[None] * 8 for _ in range(8)] # Fill the tiles
-        self.currentPlayer = Player.BLACK   # black pieces always move first
+        self.currentPlayer = Player.RED   # RED pieces always move first
         self.redPieces = 12 # red pieces totals
-        self.blackPieces = 12   # black pieces totals
+        self.bluePieces = 12   # blue pieces totals
         self.redKings = []  # red king coords
         self.blueKings = [] # blue king coords
         self.canDoubleJumpFlag = False  # bool to track if double jump is possinle
@@ -17,30 +17,30 @@ class GameBoard():
 
         # initialize all orginal pieces
         gamePieces = [
-            GamePiece(Player.BLACK, [0, 1]),
-            GamePiece(Player.BLACK, [0, 3]),
-            GamePiece(Player.BLACK, [0, 5]),
-            GamePiece(Player.BLACK, [0, 7]),
-            GamePiece(Player.BLACK, [1, 0]),  
-            GamePiece(Player.BLACK, [1, 2]),
-            GamePiece(Player.BLACK, [1, 4]),
-            GamePiece(Player.BLACK, [1, 6]),
-            GamePiece(Player.BLACK, [2, 1]),
-            GamePiece(Player.BLACK, [2, 3]),
-            GamePiece(Player.BLACK, [2, 5]),
-            GamePiece(Player.BLACK, [2, 7]),
-            GamePiece(Player.RED, [5, 0]),
-            GamePiece(Player.RED, [5, 2]),
-            GamePiece(Player.RED, [5, 4]),
-            GamePiece(Player.RED, [5, 6]),
-            GamePiece(Player.RED, [6, 1]),  
-            GamePiece(Player.RED, [6, 3]),
-            GamePiece(Player.RED, [6, 5]),
-            GamePiece(Player.RED, [6, 7]),
-            GamePiece(Player.RED, [7, 0]),
-            GamePiece(Player.RED, [7, 2]),
-            GamePiece(Player.RED, [7, 4]),
-            GamePiece(Player.RED, [7, 6])
+            GamePiece(Player.RED, [0, 1]),
+            GamePiece(Player.RED, [0, 3]),
+            GamePiece(Player.RED, [0, 5]),
+            GamePiece(Player.RED, [0, 7]),
+            GamePiece(Player.RED, [1, 0]),  
+            GamePiece(Player.RED, [1, 2]),
+            GamePiece(Player.RED, [1, 4]),
+            GamePiece(Player.RED, [1, 6]),
+            GamePiece(Player.RED, [2, 1]),
+            GamePiece(Player.RED, [2, 3]),
+            GamePiece(Player.RED, [2, 5]),
+            GamePiece(Player.RED, [2, 7]),
+            GamePiece(Player.BLUE, [5, 0]),
+            GamePiece(Player.BLUE, [5, 2]),
+            GamePiece(Player.BLUE, [5, 4]),
+            GamePiece(Player.BLUE, [5, 6]),
+            GamePiece(Player.BLUE, [6, 1]),  
+            GamePiece(Player.BLUE, [6, 3]),
+            GamePiece(Player.BLUE, [6, 5]),
+            GamePiece(Player.BLUE, [6, 7]),
+            GamePiece(Player.BLUE, [7, 0]),
+            GamePiece(Player.BLUE, [7, 2]),
+            GamePiece(Player.BLUE, [7, 4]),
+            GamePiece(Player.BLUE, [7, 6])
         ]
 
         
@@ -148,7 +148,7 @@ class GameBoard():
 
         # Over take piece
         self.overtakeMove(move, midPoint)
-        if self.redPieces == 0 or self.blackPieces == 0:
+        if self.redPieces == 0 or self.bluePieces == 0:
             self.handleReset()
             #self.updateKingArrs() 
             return True, self.returnWinner()
@@ -181,45 +181,45 @@ class GameBoard():
         self.tiles[move.start[0]][move.start[1]] = None
         self.tiles[midPoint[0]][midPoint[1]] = None
 
-        if self.currentPlayer == Player.BLACK:
-            self.redPieces -= 1
+        if self.currentPlayer == Player.RED:
+            self.bluePieces -= 1
         else:
-            self.blackPieces -= 1
+            self.redPieces -= 1
 
     def returnMidpoint(self, move):
         return [(move.start[0] + move.end[0]) // 2, (move.start[1] + move.end[1]) // 2]
     
     def switchPlayers(self):
-        if self.currentPlayer == Player.BLACK:
+        if self.currentPlayer == Player.RED:
+            self.currentPlayer = Player.BLUE
+        elif self.currentPlayer == Player.BLUE:
             self.currentPlayer = Player.RED
-        elif self.currentPlayer == Player.RED:
-            self.currentPlayer = Player.BLACK
     
     def kingMoveCheck(self, move):
         startPiece = self.tiles[move.start[0]][move.start[1]]
         # Direction checks
         if not startPiece.isKing:
-            # Direction check for nonking BLACK
-            if self.currentPlayer == Player.BLACK:
-                if move.start[0] > move.end[0]:
-                    return False, MoveError.BLACK_WRONG_DIRECTION
             # Direction check for nonking RED
             if self.currentPlayer == Player.RED:
-                if move.start[0] < move.end[0]:
+                if move.start[0] > move.end[0]:
                     return False, MoveError.RED_WRONG_DIRECTION
+            # Direction check for nonking BLUE
+            if self.currentPlayer == Player.BLUE:
+                if move.start[0] < move.end[0]:
+                    return False, MoveError.BLUE_WRONG_DIRECTION
                 
         return True, None
     
     def checkKing(self, move):
-        if self.tiles[move.end[0]][move.end[1]].location[0] == 7 and self.tiles[move.end[0]][move.end[1]].player == Player.BLACK:
+        if self.tiles[move.end[0]][move.end[1]].location[0] == 7 and self.tiles[move.end[0]][move.end[1]].player == Player.RED:
             self.tiles[move.end[0]][move.end[1]].isKing = True
-        elif self.tiles[move.end[0]][move.end[1]].location[0] == 0 and self.tiles[move.end[0]][move.end[1]].player == Player.RED:
+        elif self.tiles[move.end[0]][move.end[1]].location[0] == 0 and self.tiles[move.end[0]][move.end[1]].player == Player.BLUE:
             self.tiles[move.end[0]][move.end[1]].isKing = True
-
-        if self.tiles[move.end[0]][move.end[1]].isKing and self.currentPlayer == Player.BLACK:
-            self.blueKings.append(move.end)
 
         if self.tiles[move.end[0]][move.end[1]].isKing and self.currentPlayer == Player.RED:
+            self.blueKings.append(move.end)
+
+        if self.tiles[move.end[0]][move.end[1]].isKing and self.currentPlayer == Player.BLUE:
             self.redKings.append(move.end)
     
     def canDoubleJump(self, oldMove):
@@ -255,8 +255,8 @@ class GameBoard():
             self.canDoubleJumpFlag = True
     
     def returnWinner(self):
-        if self.blackPieces == self.redPieces: return MoveSuccess.TIED_GAME
-        if self.blackPieces > self.redPieces: return MoveSuccess.BLACK_WINS
+        if self.bluePieces == self.redPieces: return MoveSuccess.TIED_GAME
+        if self.bluePieces > self.redPieces: return MoveSuccess.BLUE_WINS
         return MoveSuccess.RED_WINS
     
     def updateKingArrs(self):
@@ -266,7 +266,7 @@ class GameBoard():
             for j in range(8):
                 if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.RED:
                     tempArrRed.append([i, j])
-                if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.BLACK:
+                if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.BLUE:
                     tempArrBlue.append([i, j])
         self.redKings = tempArrRed
         self.blueKings = tempArrBlue
