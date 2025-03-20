@@ -7,9 +7,9 @@ class GameBoard():
     def __init__(self):
         self.serialObject = self.connectArduino()   # Bluetooth object to Arduino
         self.tiles = [[None] * 8 for _ in range(8)] # Fill the tiles
-        self.currentPlayer = Player.BLACK   # black pieces always move first
+        self.currentPlayer = Player.RED   # RED pieces always move first
         self.redPieces = 12 # red pieces totals
-        self.bluePieces = 12   # black pieces totals
+        self.bluePieces = 12   # blue pieces totals
         self.redKings = []  # red king coords
         self.blueKings = [] # blue king coords
         self.canDoubleJumpFlag = False  # bool to track if double jump is possinle
@@ -17,18 +17,18 @@ class GameBoard():
 
         # initialize all orginal pieces
         gamePieces = [
-            GamePiece(Player.BLACK, [0, 1]),
-            GamePiece(Player.BLACK, [0, 3]),
-            GamePiece(Player.BLACK, [0, 5]),
-            GamePiece(Player.BLACK, [0, 7]),
-            GamePiece(Player.BLACK, [1, 0]),  
-            GamePiece(Player.BLACK, [1, 2]),
-            GamePiece(Player.BLACK, [1, 4]),
-            GamePiece(Player.BLACK, [1, 6]),
-            GamePiece(Player.BLACK, [2, 1]),
-            GamePiece(Player.BLACK, [2, 3]),
-            GamePiece(Player.BLACK, [2, 5]),
-            GamePiece(Player.BLACK, [2, 7]),
+            GamePiece(Player.RED, [0, 1]),
+            GamePiece(Player.RED, [0, 3]),
+            GamePiece(Player.RED, [0, 5]),
+            GamePiece(Player.RED, [0, 7]),
+            GamePiece(Player.RED, [1, 0]),  
+            GamePiece(Player.RED, [1, 2]),
+            GamePiece(Player.RED, [1, 4]),
+            GamePiece(Player.RED, [1, 6]),
+            GamePiece(Player.RED, [2, 1]),
+            GamePiece(Player.RED, [2, 3]),
+            GamePiece(Player.RED, [2, 5]),
+            GamePiece(Player.RED, [2, 7]),
             GamePiece(Player.BLUE, [5, 0]),
             GamePiece(Player.BLUE, [5, 2]),
             GamePiece(Player.BLUE, [5, 4]),
@@ -266,7 +266,7 @@ class GameBoard():
             for j in range(8):
                 if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.RED:
                     tempArrRed.append([i, j])
-                if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.BLACK:
+                if self.tiles[i][j] and self.tiles[i][j].isKing and self.currentPlayer == Player.BLUE:
                     tempArrBlue.append([i, j])
         self.redKings = tempArrRed
         self.blueKings = tempArrBlue
