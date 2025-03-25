@@ -9,6 +9,7 @@ import sys
 class Backend(QObject):
     lastAction = pyqtSignal(object)
     resetSignal = pyqtSignal()
+    playerTurn = pyqtSignal(Player)
     redPieces = pyqtSignal(int)
     bluePieces = pyqtSignal(int)
     redKings = pyqtSignal(list)
@@ -72,6 +73,7 @@ class Backend(QObject):
                     self.bluePieces.emit(self.gb.bluePieces)
                     self.redKings.emit(self.gb.redKings)
                     self.blueKings.emit(self.gb.blueKings)
+                    self.playerTurn.emit(self.gb.currentPlayer)
                     
                     if self.gb.currentPlayer == Player.BLUE:
                         if not self.gb.canDoubleJumpFlag: self.redMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))

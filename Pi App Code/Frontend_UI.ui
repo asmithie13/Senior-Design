@@ -231,7 +231,7 @@
        <string notr="true">color: rgb(255, 137, 139);</string>
       </property>
       <property name="text">
-       <string>Player RED:</string>
+       <string>Player RED: Your Turn!</string>
       </property>
      </widget>
     </item>
