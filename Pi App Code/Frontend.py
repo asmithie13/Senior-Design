@@ -15,6 +15,7 @@ class Frontend(QMainWindow):
         # Signals
         self.backend.lastAction.connect(self.updateLastAction)
         self.backend.resetSignal.connect(self.updateOnReset)
+        self.backend.playerTurn.connect(self.updatePlayerTurn)
         self.backend.redPieces.connect(self.updateRedPieces)
         self.backend.bluePieces.connect(self.updateBluePieces)
         self.backend.redKings.connect(self.updateRedKings)
@@ -31,7 +32,7 @@ class Frontend(QMainWindow):
     
     def updateOnReset(self):
         self.lastActionLabel.setText("Last Action:")
-        self.playerRedLabel.setText("Player RED:")
+        self.playerRedLabel.setText("Player RED: Your Turn!")
         self.playerBlueLabel.setText("Player BLUE:")
         self.redPiecesLeft.setText("Pieces Left: 12")
         self.bluePiecesLeft.setText("Pieces Left: 12")
@@ -41,6 +42,14 @@ class Frontend(QMainWindow):
         self.blueMoveLabel.setText("Last Move:")
         self.redWinLabel.setText("Win %:")
         self.blueWinLabel.setText("Win %:")
+
+    def updatePlayerTurn(self, player):
+        if player == Player.RED:
+            self.playerRedLabel.setText("Player RED: Your Turn!")
+            self.playerBlueLabel.setText("Player BLUE:")
+        else:
+            self.playerRedLabel.setText("Player RED:")
+            self.playerBlueLabel.setText("Player BLUE: Your Turn!")
     
     def updateRedPieces(self, num):
         defaultStr = "Pieces Left: "
