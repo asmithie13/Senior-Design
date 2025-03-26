@@ -38,8 +38,6 @@ class Frontend(QMainWindow):
         self.blueKingLabel.setText("King Pieces:")
         self.redMoveLabel.setText("Last Move:")
         self.blueMoveLabel.setText("Last Move:")
-        self.redWinLabel.setText("Win %:")
-        self.blueWinLabel.setText("Win %:")
 
     def updatePlayerTurn(self, player):
         if player == Player.RED:
