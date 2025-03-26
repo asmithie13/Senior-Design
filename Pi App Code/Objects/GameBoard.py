@@ -62,6 +62,7 @@ class GameBoard():
         
     def sendMoveToArduino(self, move, moveType):
         try:
+            if self.serialObject is None: self.serialObject = self.connectArduino()
             tempData = str(move.start[0]) + str(move.start[1]) + str(move.end[0]) + str(move.end[1]) + str(moveType.value)
             self.serialObject.write(tempData.encode())
             return True
@@ -71,6 +72,7 @@ class GameBoard():
         
     def sendResetToArduino(self):
         try:
+            if self.serialObject is None: self.serialObject = self.connectArduino()
             tempData = "*"
             self.serialObject.write(tempData.encode())
             return True
