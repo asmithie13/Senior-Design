@@ -1304,7 +1304,7 @@ void loop() {
   updateBoardLEDs();
 
   //Print board map to serial monitor:
-  testBoardConfig();
+  //testBoardConfig();
 
   //Reset player scores:
   playerOneScore=0;
