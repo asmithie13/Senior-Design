@@ -22,8 +22,6 @@ class Frontend(QMainWindow):
         self.backend.blueKings.connect(self.updateBlueKings)
         self.backend.redMoves.connect(self.updateRedMove)
         self.backend.blueMoves.connect(self.updateBlueMove)
-        self.backend.redChance.connect(self.updateRedChance)
-        self.backend.blueChance.connect(self.updateBlueChance)
 
     def updateLastAction(self, action):
         defaultStr = "Last Action: "
@@ -82,13 +80,7 @@ class Frontend(QMainWindow):
         defaultStr = "Last Move: "
         defaultStr += str(move.start[0]) + str(move.start[1]) + " to " + str(move.end[0]) + str(move.end[1])
         self.blueMoveLabel.setText(defaultStr)
-    
-    def updateRedChance(self, chance):
-        return
-    
-    def updateBlueChance(self, chance):
-        return
-    
+        
  
 if __name__ == "__main__":
     app = QApplication(sys.argv)

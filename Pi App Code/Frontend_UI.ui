@@ -21,24 +21,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="5" column="2">
-     <widget class="QLabel" name="blueWinLabel">
-      <property name="font">
-       <font>
-        <family>Eras Medium ITC</family>
-        <pointsize>14</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(139, 174, 255);</string>
-      </property>
-      <property name="text">
-       <string>Win %:</string>
-      </property>
-     </widget>
-    </item>
     <item row="3" column="2">
      <widget class="QLabel" name="blueKingLabel">
       <property name="font">
@@ -190,27 +172,6 @@
       </property>
       <property name="text">
        <string>King Pieces: None</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="redWinLabel">
-      <property name="font">
-       <font>
-        <family>Eras Medium ITC</family>
-        <pointsize>14</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 137, 139);</string>
-      </property>
-      <property name="text">
-       <string>Win %: </string>
       </property>
      </widget>
     </item>

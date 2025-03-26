@@ -16,8 +16,6 @@ class Backend(QObject):
     blueKings = pyqtSignal(list)
     redMoves = pyqtSignal(Move)
     blueMoves = pyqtSignal(Move)
-    redChance = pyqtSignal(float) # TODO
-    blueChance = pyqtSignal(float) # TODO
 
     def __init__(self):
         super().__init__()
