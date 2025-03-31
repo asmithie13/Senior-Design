@@ -355,13 +355,16 @@ void voiceControlledGame(){
       checkerBoard[selectedChecker[0]+1][selectedChecker[1]+1]=0;
     }
 
+    //Record the value at the selected checker space:
+    int selectedValue=checkerBoard[selectedChecker[0]][selectedChecker[1]];
+
     //Shut-off the selected checker space:
     checkerBoard[selectedChecker[0]][selectedChecker[1]]=0;
     
     //Light-up the new space accordingly, and alternate the player in-turn:
     if(playerInTurn.playerNum==1){
       //Set the move space:
-      checkerBoard[moveSpace[0]][moveSpace[1]]=1;
+      checkerBoard[moveSpace[0]][moveSpace[1]]=selectedValue;
 
       //Display move message:
       lcd1.clear();
@@ -385,7 +388,7 @@ void voiceControlledGame(){
     }
     else{
       //Set the move space:
-      checkerBoard[moveSpace[0]][moveSpace[1]]=2;
+      checkerBoard[moveSpace[0]][moveSpace[1]]=selectedValue;
 
       //Display move message:
       lcd2.clear();
