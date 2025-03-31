@@ -19,3 +19,7 @@ CONTINUE Bellow for king test
 6150
 0514
 1605
+
+Test King Piece
+2132    Other Piece
+0516    King Piece
