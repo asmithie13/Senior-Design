@@ -9,7 +9,7 @@ def fillVisual(gb, visArr):
     for i in range(8):
         for j in range(8):
             if gb.tiles[i][j] is not None:
-                if gb.tiles[i][j].player == Player.BLACK:
+                if gb.tiles[i][j].player == Player.BLUE:
                     visArr[i][j] = "B"
                 else:
                     visArr[i][j] = "R"
