@@ -135,7 +135,7 @@ void updateBoardLEDs(){
       else if(checkerBoard[i][j]==2){
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
-      else if(checkerBoard[i][j]==3 || checkerBoard[i][j]==4){
+      else if(checkerBoard[i][j]>2){
         matrix.setDot(redCoordOne, redCoordTwo, 0xFF);
         matrix.setDot(blueCoordOne, blueCoordTwo, 0xFF);
       }
@@ -355,13 +355,16 @@ void voiceControlledGame(){
       checkerBoard[selectedChecker[0]+1][selectedChecker[1]+1]=0;
     }
 
+    //Record the value at the selected checker space:
+    int selectedValue=checkerBoard[selectedChecker[0]][selectedChecker[1]];
+
     //Shut-off the selected checker space:
     checkerBoard[selectedChecker[0]][selectedChecker[1]]=0;
     
     //Light-up the new space accordingly, and alternate the player in-turn:
     if(playerInTurn.playerNum==1){
       //Set the move space:
-      checkerBoard[moveSpace[0]][moveSpace[1]]=1;
+      checkerBoard[moveSpace[0]][moveSpace[1]]=selectedValue;
 
       //Display move message:
       lcd1.clear();
@@ -385,7 +388,7 @@ void voiceControlledGame(){
     }
     else{
       //Set the move space:
-      checkerBoard[moveSpace[0]][moveSpace[1]]=2;
+      checkerBoard[moveSpace[0]][moveSpace[1]]=selectedValue;
 
       //Display move message:
       lcd2.clear();
@@ -1272,7 +1275,7 @@ void setup() {
   //Initialize serial communication with the DFPlayer:
   Serial2.begin(9600);
   if(!myDFPlayer.begin(Serial2)){ //Ensure that the DFPlayer is initialized
-    while (true);
+    while(true);
   }
 
   //Set the volume of the DFPlayer:
@@ -1304,7 +1307,7 @@ void loop() {
   updateBoardLEDs();
 
   //Print board map to serial monitor:
-  //testBoardConfig();
+  testBoardConfig();
 
   //Reset player scores:
   playerOneScore=0;
