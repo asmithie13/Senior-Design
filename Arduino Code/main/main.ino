@@ -1063,7 +1063,7 @@ void moveChecker(){
   checkerBoard[coordOne][coordTwo]=checkerBoard[selectedChecker[0]][selectedChecker[1]];
   
   //See if a checker has been jumped:
-  if(abs(coordOne-selectedChecker[0])==2){
+  if(coordOne-selectedChecker[0]==2 || coordOne-selectedChecker[0]==-2){
     justJumped=true;
   }
   else{
@@ -1232,7 +1232,8 @@ void manualGame(){
     canJump=checkDoubleJump();
 
     //Change the player in-turn if no double-jump occurs:
-    if(!(canJump==true && justJumped==true)){
+    canJump=canJump&&justJumped;
+    if(canJump==false){
       if(playerInTurn.playerNum==1){
         playerInTurn.playerNum=2;
       }
