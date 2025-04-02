@@ -58,8 +58,11 @@ int selectedChecker[2]={NULL, NULL};
 //Previously-moved checker:
 int prevChecker[2]={NULL, NULL};
 
-//Boolean variable indicating a double-jump:
-bool inJump;
+//Boolean variable indicating that a checker was just jumped:
+bool justJumped;
+
+//Boolean variable indicating that a double-jump is available:
+bool canJump;
 
 //Initialize scores:
 int playerOneScore=0;
@@ -897,7 +900,7 @@ void moveChecker(){
   int firstFlag=0;
 
   //If the input coordinate was invalid, ask again:
-  while((inJump==true && (abs(coordOne-selectedChecker[0])==1 || abs(coordOne-selectedChecker[1])==1)) || coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
+  while((canJump==true && (abs(coordOne-selectedChecker[0])==1 || abs(coordOne-selectedChecker[1])==1)) || coordOne<0 || coordOne>7 || coordTwo<0 || coordTwo>7 || (coordOne+coordTwo)%2==0 || checkerBoard[coordOne][coordTwo]!=0 || validFlag==0){
     //If this is not the first iteration of the loop, it means that the user's first input...
     //...was invalid. Display a message indicating this:
     if(firstFlag!=0){
@@ -1058,6 +1061,14 @@ void moveChecker(){
   
   //Set the new checker space:
   checkerBoard[coordOne][coordTwo]=checkerBoard[selectedChecker[0]][selectedChecker[1]];
+  
+  //See if a checker has been jumped:
+  if(abs(coordOne-selectedChecker[0])==2){
+    justJumped=true;
+  }
+  else{
+    justJumped=false;
+  }
 
   //Display the desired message based on the player in-turn:
   if(playerInTurn.playerNum==1){
@@ -1126,7 +1137,7 @@ bool checkForWinner(){
 //Function to execute the manual game mode:
 void manualGame(){
   //Boolean variable to signal a double-jump:
-  inJump=false;
+  canJump=false;
 
   //Begin game loop:
   while(1){
@@ -1138,7 +1149,7 @@ void manualGame(){
     lcd2.setCursor(0, 0);
 
     //Determine if another checker must be selected, or if a double-jump is available:
-    if(inJump==false){
+    if(canJump==false){
       //Display messages based on the player in-turn:
       if(playerInTurn.playerNum==1){
         lcd1.print("Your turn!");
@@ -1218,10 +1229,10 @@ void manualGame(){
     testBoardConfig();
 
     //Check for a double-jump:
-    inJump=checkDoubleJump();
+    canJump=checkDoubleJump();
 
     //Change the player in-turn if no double-jump occurs:
-    if(inJump==false){
+    if(!(canJump==true && justJumped==true)){
       if(playerInTurn.playerNum==1){
         playerInTurn.playerNum=2;
       }
