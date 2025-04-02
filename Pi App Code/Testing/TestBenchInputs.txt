@@ -23,3 +23,17 @@ CONTINUE Bellow for king test
 Test King Piece
 2132    Other Piece
 0516    King Piece
+
+TEST 2
+
+2534
+5243
+2736
+5647
+3645
+6152
+1627
+6756
+0716
+4325
+2507
