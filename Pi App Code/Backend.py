@@ -26,6 +26,7 @@ class Backend(QObject):
     def _registerRoutes(self):
         @self.app.route('/sendData', methods=['POST'])
         def sendData():
+            filename = "Pi App Code/log.txt"
             # Try to decode data
             try:
                 data = request.data.decode('utf-8')
@@ -38,6 +39,8 @@ class Backend(QObject):
                 'status': result[0],
                 'message': result[1]
                 }
+                with open(filename, 'a') as f: 
+                    f.write(str(result[0]) + " " + PhoneError.DECODE_ERROR.name + '\n')
                 return jsonify(response)
         
             # Reset case
@@ -52,6 +55,8 @@ class Backend(QObject):
                 'status': result[0],
                 'message': result[1]
                 }
+                with open(filename, 'a') as f: 
+                    f.write(str(result[0]) + " " + result[1].name + '\n')
                 return jsonify(response)
             
             # Normal move case
@@ -64,6 +69,8 @@ class Backend(QObject):
                 'status': result[0],
                 'message': result[1]
                 }
+                with open(filename, 'a') as f: 
+                    f.write(str(result[0]) + " " + result[1].name + '\n')
 
                 # Update red piece count
                 if result[0]:
@@ -89,6 +96,8 @@ class Backend(QObject):
                 'status': False,
                 'message': PhoneError.INVALID_SIGNAL.value
                 }
+                with open(filename, 'a') as f: 
+                    f.write("False" + " " + PhoneError.INVALID_SIGNAL.name + '\n')
                 return jsonify(response)
             
 class FlaskThread(QThread):
