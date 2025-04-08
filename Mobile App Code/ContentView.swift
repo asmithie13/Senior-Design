@@ -74,6 +74,10 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         
         // Process recognition results
         recognitionTask = recognizer.recognitionTask(with: request) { (result, error) in
+            // If the listening flag is false, ignore any results
+            // This prevents any delayed recognition results after a clear command.
+            guard self.audioEngine.isRunning else { return }
+            
             if let result = result {
                 let recognizedText = result.bestTranscription.formattedString.lowercased()
                 
@@ -266,7 +270,7 @@ struct ContentView: View {
             Button(action: endGame) {
                 HStack {
                     Image(systemName: "arrow.clockwise")
-                    Text("Reset")
+                    Text("Restart")
                 }
             }
             .buttonStyle(SecondaryButtonStyle())
@@ -394,6 +398,8 @@ struct ContentView: View {
     
     // Ends current game and resets state
     func endGame() {
+        speechRecognizer.stopListening() // Ensure listening is stopped
+        isListening = false
         if useTestBench {
             winner = ["Player One", "Player Two"].randomElement()!
         } else {
@@ -406,8 +412,11 @@ struct ContentView: View {
         TestBench.shared.deactivate()
     }
     
-    // Clears current move input
+    // Clears current move input and resets listening state
     func clearLastMove() {
+        // Stop listening and update the flag so that further input can be accepted.
+        speechRecognizer.stopListening()
+        isListening = false
         lastMove = ""
     }
     
@@ -448,6 +457,9 @@ struct ContentView: View {
         
         speechRecognizer.stopListening()
         speechRecognizer.startListening { [self] result in
+            // If listening was cancelled (e.g. due to a clear command), do not update lastMove.
+            guard isListening else { return }
+            
             // Handle voice commands
             if result == "CLEAR" {
                 DispatchQueue.main.async {
@@ -459,6 +471,8 @@ struct ContentView: View {
                 }
             } else if result == "RESTART" {
                 DispatchQueue.main.async {
+                    self.speechRecognizer.stopListening()
+                    self.isListening = false
                     self.endGame()
                 }
             } else {
@@ -507,27 +521,42 @@ struct ContentView: View {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        // Send plain text rather than JSON
+        // Send plain text
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpBody = move.data(using: .utf8)
         
         // Handle server response
         let task = URLSession.shared.dataTask(with: request) { [self] data, response, error in
             if let error = error {
-                updateMoveHistory(status: "Connection error: \(error.localizedDescription)", isValid: false)
+                DispatchQueue.main.async {
+                    updateMoveHistory(status: "Connection error: \(error.localizedDescription)", isValid: false)
+                }
                 return
             }
             
-            guard let data = data,
-                  let responseString = String(data: data, encoding: .utf8) else {
-                updateMoveHistory(status: "No response from server", isValid: false)
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    updateMoveHistory(status: "No response from server", isValid: false)
+                }
                 return
             }
             
-            DispatchQueue.main.async {
-                // Update move history with the server's plain text response
-                updateMoveHistory(status: responseString, isValid: true)
-                currentPlayer = (currentPlayer == "Player One") ? "Player Two" : "Player One"
+            do {
+                if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    let valid = jsonResponse["status"] as? Bool ?? false
+                    let message = jsonResponse["message"] as? String ?? "No message"
+                    DispatchQueue.main.async {
+                        updateMoveHistory(status: message, isValid: valid)
+                        // If the message does not indicate a double jump and the move is valid, switch players
+                        if !message.lowercased().contains("double jump") && valid {
+                            currentPlayer = (currentPlayer == "Player One") ? "Player Two" : "Player One"
+                        }
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    updateMoveHistory(status: "Invalid response format", isValid: false)
+                }
             }
         }
         task.resume()
@@ -539,7 +568,7 @@ struct ContentView: View {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             if mockResponse.status {
-                if self.testScenario == .doubleJump {
+                if mockResponse.message.lowercased().contains("double jump") {
                     self.updateMoveHistory(status: mockResponse.message, isValid: true)
                 } else {
                     self.currentPlayer = (self.currentPlayer == "Player One") ? "Player Two" : "Player One"
