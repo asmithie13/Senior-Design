@@ -44,6 +44,7 @@ class Backend(QObject):
             if data == "*":
                 print("Reset Signal Sent")
                 result = self.gb.handleReset()
+                self.gb.__init__()
                 self.resetSignal.emit()
                 print(result[0])
                 print(result[1].value)
@@ -80,6 +81,8 @@ class Backend(QObject):
                         if not self.gb.canDoubleJumpFlag: self.blueMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
                         else: self.redMoves.emit(Move([int(data[0]), int(data[1])], [int(data[2]), int(data[3])]))
 
+                    if result[1] == MoveSuccess.TIED_GAME or result[1] == MoveSuccess.BLUE_WINS or result == MoveSuccess.RED_WINS:
+                        self.gb.__init__()
 
                 return jsonify(response)
             

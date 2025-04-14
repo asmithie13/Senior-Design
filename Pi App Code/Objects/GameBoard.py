@@ -83,7 +83,6 @@ class GameBoard():
 
     def handleReset(self):
         self.sendResetToArduino()
-        self.__init__()
         return True, self.returnWinner()
 
     def validateMove(self, move):
